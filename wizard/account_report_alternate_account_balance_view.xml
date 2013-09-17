@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="account_report_alternate_balance_view" model="ir.ui.view">
+            <field name="name">Trial Balance Alternate</field>
+            <field name="model">account.balance.report</field>
+            <field name="inherit_id" ref="account.account_report_balance_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='chart_account_id']" position="after">
+                    <field name="ledger_id" />
+                </xpath>
+                <xpath expr="//field[@name='fiscalyear_id']" position="after">
+                    <field name="no_opening" />
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>
