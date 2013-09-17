@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_ledger_type_tree" model="ir.ui.view">
+            <field name="name">alternate.ledger.ledger.type.tree</field>
+            <field name="model">alternate_ledger.ledger_type</field>
+            <field name="arch" type="xml">
+                <tree string="Ledger Type" version="7.0" editable="bottom">
+                    <field name="name" />
+                    <field name="type" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_ledger_type_form" model="ir.ui.view">
+            <field name="name">alternate.ledger.ledger.type.form</field>
+            <field name="model">alternate_ledger.ledger_type</field>
+            <field name="arch" type="xml">
+                <form string="Ledger Type" version="7.0" editable="bottom">
+                    <group>
+                        <field name="name" />
+                        <field name="type" />
+                    </group>
+                </form>
+            </field>
+        </record>
+        <!-- Actions -->
+
+        <record id="action_ledger_type" model="ir.actions.act_window">
+            <field name="name">Ledger Type</field>
+            <field name="res_model">alternate_ledger.ledger_type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+        </record>
+    </data>
+</openerp>
