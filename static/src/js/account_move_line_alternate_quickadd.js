@@ -5,7 +5,7 @@ openerp.alternate_ledger = function (instance) {
     
     instance.web.alternate_ledger = instance.web.alternate_ledger || {};
 
-    instance.web.views.add('tree_account_move_line_alternate_quickadd', 'instance.web.alternate_ledger.QuickAddListView');
+    instance.web.views.add('tree_alternate_ledger_move_line_quickadd', 'instance.web.alternate_ledger.QuickAddListView');
     instance.web.alternate_ledger.QuickAddListView = instance.web.ListView.extend({
         init: function() {
             this._super.apply(this, arguments);
@@ -25,7 +25,7 @@ openerp.alternate_ledger = function (instance) {
         start:function(){
             var tmp = this._super.apply(this, arguments);
             var self = this;
-            this.$el.parent().prepend(QWeb.render("AccountMoveLineAlternateQuickAdd", {widget: this}));
+            this.$el.parent().prepend(QWeb.render("AlternateLedgerMoveLineQuickAdd", {widget: this}));
             
             this.$el.parent().find('.oe_alternate_ledger_select_ledger').change(function() {
                     self.current_ledger = this.value === '' ? null : parseInt(this.value);
@@ -49,7 +49,7 @@ openerp.alternate_ledger = function (instance) {
                 self.$el.parent().find('.oe_alternate_ledger_select_journal').removeAttr('disabled');
                 self.$el.parent().find('.oe_alternate_ledger_select_period').removeAttr('disabled');
             });
-            var mod = new instance.web.Model("account.move.line.alternate", self.dataset.context, self.dataset.domain);
+            var mod = new instance.web.Model("alternate_ledger.move.line", self.dataset.context, self.dataset.domain);
             mod.call("default_get", [['ledger_id','journal_id','period_id'],self.dataset.context]).then(function(result) {
                 self.current_ledger = result['ledger_id'];
                 self.current_period = result['period_id'];
@@ -63,7 +63,7 @@ openerp.alternate_ledger = function (instance) {
             this.last_context = context;
             this.last_group_by = group_by;
             this.old_search = _.bind(this._super, this);
-            var mod = new instance.web.Model("account.move.line.alternate", context, domain);
+            var mod = new instance.web.Model("alternate_ledger.move.line", context, domain);
             return $.when(mod.call("list_journals", []).then(function(result) {
                 self.journals = result;
             }),mod.call("list_periods", []).then(function(result) {
