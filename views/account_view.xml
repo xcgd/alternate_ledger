@@ -4,6 +4,19 @@
 
         <!-- Views -->
 
+        <record id="alternate_ledger_account" model="ir.ui.view">
+            <field name="name">account.account.form</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//label[@for='note']" position="before">
+                    <group>
+                        <field name="ledger_type" widget="many2many_tags" />
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
         <record id="view_move_line_alternate_tree" model="ir.ui.view">
             <field name="name">alternate_ledger.move.line.tree</field>
             <field name="model">alternate_ledger.move.line</field>
