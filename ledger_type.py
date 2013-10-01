@@ -11,13 +11,15 @@ _enum_ledger_type = [
 
 class ledger_type(osv.Model):
     _name = 'alternate_ledger.ledger_type'
-    
+
     _columns = {
         'name': fields.char(
             _('Name'), size=256, required=True),
         'type': fields.selection(
             _enum_ledger_type, _('Ledger Type'), required=True),
     }
+
+    _order = 'name'
 
     _sql_constraint = [
         ('name', "UNIQUE('name')", 'Name has to be unique !'),
