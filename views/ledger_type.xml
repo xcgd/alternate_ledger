@@ -7,7 +7,6 @@
             <field name="arch" type="xml">
                 <tree string="Ledger Type" version="7.0" editable="bottom">
                     <field name="name" />
-                    <field name="type" />
                 </tree>
             </field>
         </record>
@@ -19,7 +18,6 @@
                 <form string="Ledger Type" version="7.0" editable="bottom">
                     <group>
                         <field name="name" />
-                        <field name="type" />
                     </group>
                 </form>
             </field>
