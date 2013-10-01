@@ -517,41 +517,37 @@ class alternate_ledger_move(osv.osv):
                     if line.account_id.currency_id.id != line.currency_id.id and (line.account_id.currency_id.id != line.account_id.company_id.currency_id.id):
                         raise osv.except_osv(_('Error!'), _("""Cannot create move with currency different from ..""") % (line.account_id.code, line.account_id.name))
 
-            if abs(amount) < 10 ** -4:
-                # If the move is balanced
-                # Add to the list of valid moves
-                # (analytic lines will be created later for valid moves)
-                valid_moves.append(move)
+            valid_moves.append(move)
 
-                # Check whether the move lines are confirmed
+            # Check whether the move lines are confirmed
 
-                if not line_draft_ids:
-                    continue
-                # Update the move lines (set them as valid)
+            if not line_draft_ids:
+                continue
+            # Update the move lines (set them as valid)
 
-                obj_move_line.write(cr, uid, line_draft_ids, {
-                    'state': 'valid'
-                }, context, check=False)
+            obj_move_line.write(cr, uid, line_draft_ids, {
+                'state': 'valid'
+            }, context, check=False)
 
-                account = {}
-                account2 = {}
+            account = {}
+            account2 = {}
 
-                if journal.type in ('purchase','sale'):
-                    for line in move.line_id:
-                        code = amount = 0
-                        key = (line.account_id.id, line.tax_code_id.id)
-                        if key in account2:
-                            code = account2[key][0]
-                            amount = account2[key][1] * (line.debit + line.credit)
-                        elif line.account_id.id in account:
-                            code = account[line.account_id.id][0]
-                            amount = account[line.account_id.id][1] * (line.debit + line.credit)
-                        if (code or amount) and not (line.tax_code_id or line.tax_amount):
-                            obj_move_line.write(cr, uid, [line.id], {
-                                'tax_code_id': code,
-                                'tax_amount': amount
-                            }, context, check=False)
-            elif journal.centralisation:
+            if journal.type in ('purchase','sale'):
+                for line in move.line_id:
+                    code = amount = 0
+                    key = (line.account_id.id, line.tax_code_id.id)
+                    if key in account2:
+                        code = account2[key][0]
+                        amount = account2[key][1] * (line.debit + line.credit)
+                    elif line.account_id.id in account:
+                        code = account[line.account_id.id][0]
+                        amount = account[line.account_id.id][1] * (line.debit + line.credit)
+                    if (code or amount) and not (line.tax_code_id or line.tax_amount):
+                        obj_move_line.write(cr, uid, [line.id], {
+                            'tax_code_id': code,
+                            'tax_amount': amount
+                        }, context, check=False)
+            if journal.centralisation:
                 # If the move is not balanced, it must be centralised...
 
                 # Add to the list of valid moves
