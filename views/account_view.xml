@@ -22,6 +22,7 @@
             <field name="model">alternate_ledger.move.line</field>
             <field name="arch" type="xml">
                 <tree colors="red:state == 'draft';black:state == 'valid'" string="Journal Items" create="true" on_write="on_create_write" version="7.0" editable="top">
+                    <field name="ledger_id" required="True" on_change="onchange_ledger_id(ledger_id)"/>
                     <field name="journal_id" options='{"no_open":True}' invisible="context.get('journal_id',False)" />
                     <field name="period_id" options='{"no_open":True}' invisible="context.get('period_id',False)" />
                     <field name="date" />
@@ -171,6 +172,7 @@
                               context="{'line_id': line_id , 'journal_id': journal_id }">
                                 <form string="Journal Item" version="7.0">
                                     <group col="6" colspan="4">
+                                        <field invisible="1" name="ledger_id" />
                                         <field name="name"/>
                                         <field name="ref"/>
                                         <field name="partner_id" on_change="onchange_partner_id(False, partner_id, account_id, debit, credit, date, journal_id, context)"/>

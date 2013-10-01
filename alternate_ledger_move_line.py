@@ -653,6 +653,14 @@ class alternate_ledger_move_line(osv.osv):
         ),
     }
 
+    def onchange_ledger_id(self, cr, uid, ids, ledger_id, context=None):
+        account_osv = self.pool.get('account.account')
+        account_ids = account_osv.search(cr, uid, [('ledger_types', 'in', [ledger_id])], context)
+        if account_ids:
+            return {'domain': {'account_id': [('id', 'in', account_ids)]}}
+        return {'domain': {'account_id': []}}
+
+
     def _get_date(self, cr, uid, context=None):
         if context is None:
             context or {}
