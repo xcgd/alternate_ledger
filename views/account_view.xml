@@ -11,7 +11,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//label[@for='note']" position="before">
                     <group>
-                        <field name="ledger_type" widget="many2many_tags" />
+                        <field name="ledger_types" widget="many2many_tags" />
                     </group>
                 </xpath>
             </field>
