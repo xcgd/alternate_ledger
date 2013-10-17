@@ -19,6 +19,11 @@
 #
 ##############################################################################
 
+# This file copies (and appropriately renames):
+# - The account_move_line provided by the account module.
+# - account_move_line modifications provided by the account_streamline module.
+# account_streamline changes are marked with and "account_streamline" comment.
+
 import sys
 import time
 from datetime import datetime
@@ -32,9 +37,32 @@ from openerp.tools.translate import _
 import openerp.addons.decimal_precision as dp
 from openerp import tools
 
+# account_streamline
+# fields that are considered as forbidden once the move_id has been posted
+forbidden_fields = ["move_id"]
+
+msg_invalid_move = _('You cannot add line(s) into an already posted entry')
+msg_cannot_remove_line = _(
+    'You cannot remove line(s) from an already posted entry')
+msg_invalid_journal = _('You cannot move line(s) between journal types')
+
+
 class alternate_ledger_move_line(osv.osv):
     _name = "alternate_ledger.move.line"
     _description = "Journal Items"
+
+    # account_streamline
+    def _get_reconcile_date(self, cr, uid, ids, field_name, arg, context):
+        reconcile_osv = self.pool.get("account.move.reconcile")
+        move_line_osv = self.pool.get("account.move.line")
+        result = {}
+        if (not reconcile_osv) or (not move_line_osv):
+            return None
+        move_lines = move_line_osv.browse(cr, uid, ids, context=context)
+        for move_line in move_lines:
+            result[move_line.id] = move_line.reconcile_id and move_line.reconcile_id.create_date or None
+
+        return result
 
     def _query_get(self, cr, uid, obj='l', context=None):
         fiscalyear_obj = self.pool.get('account.fiscalyear')
@@ -46,15 +74,15 @@ class alternate_ledger_move_line(osv.osv):
         initial_bal = context.get('initial_bal', False)
         company_clause = " "
         if context.get('company_id', False):
-            company_clause = " AND " +obj+".company_id = %s" % context.get('company_id', False)
+            company_clause = " AND " + obj + ".company_id = %s" % context.get('company_id', False)
         if not context.get('fiscalyear', False):
             if context.get('all_fiscalyear', False):
-                #this option is needed by the aged balance report because otherwise, if we search only the draft ones, an open invoice of a closed fiscalyear won't be displayed
+                # this option is needed by the aged balance report because otherwise, if we search only the draft ones, an open invoice of a closed fiscalyear won't be displayed
                 fiscalyear_ids = fiscalyear_obj.search(cr, uid, [])
             else:
                 fiscalyear_ids = fiscalyear_obj.search(cr, uid, [('state', '=', 'draft')])
         else:
-            #for initial balance as well as for normal query, we check only the selected FY because the best practice is to generate the FY opening entries
+            # for initial balance as well as for normal query, we check only the selected FY because the best practice is to generate the FY opening entries
             fiscalyear_ids = [context['fiscalyear']]
 
         fiscalyear_clause = (','.join([str(x) for x in fiscalyear_ids])) or '0'
@@ -64,13 +92,13 @@ class alternate_ledger_move_line(osv.osv):
 
         if context.get('date_from', False) and context.get('date_to', False):
             if initial_bal:
-                where_move_lines_by_date = " AND " +obj+".move_id IN (SELECT id FROM alternate_ledger_move WHERE date < '" +context['date_from']+"')"
+                where_move_lines_by_date = " AND " + obj + ".move_id IN (SELECT id FROM alternate_ledger_move WHERE date < '" + context['date_from'] + "')"
             else:
-                where_move_lines_by_date = " AND " +obj+".move_id IN (SELECT id FROM alternate_legder_move WHERE date >= '" +context['date_from']+"' AND date <= '"+context['date_to']+"')"
+                where_move_lines_by_date = " AND " + obj + ".move_id IN (SELECT id FROM alternate_legder_move WHERE date >= '" + context['date_from'] + "' AND date <= '" + context['date_to'] + "')"
 
         if state:
             if state.lower() not in ['all']:
-                where_move_state= " AND "+obj+".move_id IN (SELECT id FROM alternate_legder_move WHERE alternate_legder_move.state = '"+state+"')"
+                where_move_state = " AND " + obj + ".move_id IN (SELECT id FROM alternate_legder_move WHERE alternate_legder_move.state = '" + state + "')"
         if context.get('period_from', False) and context.get('period_to', False) and not context.get('periods', False):
             if initial_bal:
                 period_company_id = fiscalperiod_obj.browse(cr, uid, context['period_from'], context=context).company_id.id
@@ -80,30 +108,30 @@ class alternate_ledger_move_line(osv.osv):
                 context['periods'] = fiscalperiod_obj.build_ctx_periods(cr, uid, context['period_from'], context['period_to'])
         if context.get('periods', False):
             if initial_bal:
-                query = obj+".state <> 'draft' AND "+obj+".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s)) %s %s" % (fiscalyear_clause, where_move_state, where_move_lines_by_date)
+                query = obj + ".state <> 'draft' AND " + obj + ".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s)) %s %s" % (fiscalyear_clause, where_move_state, where_move_lines_by_date)
                 period_ids = fiscalperiod_obj.search(cr, uid, [('id', 'in', context['periods'])], order='date_start', limit=1)
                 if period_ids and period_ids[0]:
                     first_period = fiscalperiod_obj.browse(cr, uid, period_ids[0], context=context)
                     ids = ','.join([str(x) for x in context['periods']])
-                    query = obj+".state <> 'draft' AND "+obj+".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s) AND date_start <= '%s' AND id NOT IN (%s)) %s %s" % (fiscalyear_clause, first_period.date_start, ids, where_move_state, where_move_lines_by_date)
+                    query = obj + ".state <> 'draft' AND " + obj + ".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s) AND date_start <= '%s' AND id NOT IN (%s)) %s %s" % (fiscalyear_clause, first_period.date_start, ids, where_move_state, where_move_lines_by_date)
             else:
                 ids = ','.join([str(x) for x in context['periods']])
-                query = obj+".state <> 'draft' AND "+obj+".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s) AND id IN (%s)) %s %s" % (fiscalyear_clause, ids, where_move_state, where_move_lines_by_date)
+                query = obj + ".state <> 'draft' AND " + obj + ".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s) AND id IN (%s)) %s %s" % (fiscalyear_clause, ids, where_move_state, where_move_lines_by_date)
         else:
-            query = obj+".state <> 'draft' AND "+obj+".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s)) %s %s" % (fiscalyear_clause, where_move_state, where_move_lines_by_date)
+            query = obj + ".state <> 'draft' AND " + obj + ".period_id IN (SELECT id FROM account_period WHERE fiscalyear_id IN (%s)) %s %s" % (fiscalyear_clause, where_move_state, where_move_lines_by_date)
 
         if initial_bal and not context.get('periods', False) and not where_move_lines_by_date:
-            #we didn't pass any filter in the context, and the initial balance can't be computed using only the fiscalyear otherwise entries will be summed twice
-            #so we have to invalidate this query
-            raise osv.except_osv(_('Warning!'),_("You have not supplied enough arguments to compute the initial balance, please select a period and a journal in the context."))
+            # we didn't pass any filter in the context, and the initial balance can't be computed using only the fiscalyear otherwise entries will be summed twice
+            # so we have to invalidate this query
+            raise osv.except_osv(_('Warning!'), _("You have not supplied enough arguments to compute the initial balance, please select a period and a journal in the context."))
 
 
         if context.get('journal_ids', False):
-            query += ' AND '+obj+'.journal_id IN (%s)' % ','.join(map(str, context['journal_ids']))
+            query += ' AND ' + obj + '.journal_id IN (%s)' % ','.join(map(str, context['journal_ids']))
 
         if context.get('chart_account_id', False):
             child_ids = account_obj._get_children_and_consol(cr, uid, [context['chart_account_id']], context=context)
-            query += ' AND '+obj+'.account_id IN (%s)' % ','.join(map(str, child_ids))
+            query += ' AND ' + obj + '.account_id IN (%s)' % ','.join(map(str, child_ids))
 
         query += company_clause
         return query
@@ -128,7 +156,7 @@ class alternate_ledger_move_line(osv.osv):
             if move_line.reconcile_id:
                 continue
             if not move_line.account_id.type in ('payable', 'receivable'):
-                #this function does not suport to be used on move lines not related to payable or receivable accounts
+                # this function does not suport to be used on move lines not related to payable or receivable accounts
                 continue
 
             if move_line.currency_id:
@@ -137,7 +165,7 @@ class alternate_ledger_move_line(osv.osv):
             else:
                 move_line_total = move_line.debit - move_line.credit
                 sign = (move_line.debit - move_line.credit) < 0 and -1 or 1
-            line_total_in_company_currency =  move_line.debit - move_line.credit
+            line_total_in_company_currency = move_line.debit - move_line.credit
             context_unreconciled = context.copy()
             if move_line.reconcile_partial_id:
                 for payment_line in move_line.reconcile_partial_id.line_partial_ids:
@@ -155,7 +183,7 @@ class alternate_ledger_move_line(osv.osv):
                     line_total_in_company_currency += (payment_line.debit - payment_line.credit)
 
             result = move_line_total
-            res[move_line.id]['amount_residual_currency'] =  sign * (move_line.currency_id and self.pool.get('res.currency').round(cr, uid, move_line.currency_id, result) or result)
+            res[move_line.id]['amount_residual_currency'] = sign * (move_line.currency_id and self.pool.get('res.currency').round(cr, uid, move_line.currency_id, result) or result)
             res[move_line.id]['amount_residual'] = sign * line_total_in_company_currency
         return res
 
@@ -192,7 +220,7 @@ class alternate_ledger_move_line(osv.osv):
         for obj_line in self.browse(cr, uid, ids, context=context):
             if obj_line.analytic_account_id:
                 if not obj_line.journal_id.analytic_journal_id:
-                    raise osv.except_osv(_('No Analytic Journal!'),_("You have to define an analytic journal on the '%s' journal!") % (obj_line.journal_id.name, ))
+                    raise osv.except_osv(_('No Analytic Journal!'), _("You have to define an analytic journal on the '%s' journal!") % (obj_line.journal_id.name,))
                 vals_line = self._prepare_analytic_line(cr, uid, obj_line, context=context)
                 acc_ana_line_obj.create(cr, uid, vals_line)
         return True
@@ -209,7 +237,7 @@ class alternate_ledger_move_line(osv.osv):
         if context is None:
             context = {}
         period_obj = self.pool.get('account.period')
-        #check if the period_id changed in the context from client side
+        # check if the period_id changed in the context from client side
         if context.get('period_id', False):
             period_id = context.get('period_id')
             if type(period_id) == str:
@@ -220,7 +248,7 @@ class alternate_ledger_move_line(osv.osv):
         return context
 
     def _default_get(self, cr, uid, fields, context=None):
-        #default_get should only do the following:
+        # default_get should only do the following:
         #   -propose the next amount in debit/credit in order to balance the move
         #   -propose the next account from the journal (default debit/credit account) accordingly
         if context is None:
@@ -244,15 +272,15 @@ class alternate_ledger_move_line(osv.osv):
         data = super(alternate_ledger_move_line, self).default_get(cr, uid, fields, context=context)
         if context.get('journal_id'):
             total = 0.0
-            #in alternate_ledge.move form view, it is not possible to compute total debit and credit using
-            #a browse record. So we must use the context to pass the whole one2many field and compute the total
+            # in alternate_ledge.move form view, it is not possible to compute total debit and credit using
+            # a browse record. So we must use the context to pass the whole one2many field and compute the total
             if context.get('line_id'):
                 for move_line_dict in move_obj.resolve_2many_commands(cr, uid, 'line_id', context.get('line_id'), context=context):
                     data['name'] = data.get('name') or move_line_dict.get('name')
                     data['partner_id'] = data.get('partner_id') or move_line_dict.get('partner_id')
                     total += move_line_dict.get('debit', 0.0) - move_line_dict.get('credit', 0.0)
             elif context.get('period_id'):
-                #find the date and the ID of the last unbalanced alternate_ledger.move encoded by the current user in that journal and period
+                # find the date and the ID of the last unbalanced alternate_ledger.move encoded by the current user in that journal and period
                 move_id = False
                 cr.execute('''SELECT move_id, date FROM alternate_ledger_move_line
                     WHERE journal_id = %s AND period_id = %s AND create_uid = %s AND state = %s
@@ -262,8 +290,8 @@ class alternate_ledger_move_line(osv.osv):
                 data['date'] = res and res[1] or period_obj.browse(cr, uid, context['period_id'], context=context).date_start
                 data['move_id'] = move_id
                 if move_id:
-                    #if there exist some unbalanced accounting entries that match the journal and the period,
-                    #we propose to continue the same move by copying the ref, the name, the partner...
+                    # if there exist some unbalanced accounting entries that match the journal and the period,
+                    # we propose to continue the same move by copying the ref, the name, the partner...
                     move = move_obj.browse(cr, uid, move_id, context=context)
                     data.setdefault('name', move.line_id[-1].name)
                     for l in move.line_id:
@@ -271,26 +299,26 @@ class alternate_ledger_move_line(osv.osv):
                         data['ref'] = data.get('ref') or l.ref
                         total += (l.debit or 0.0) - (l.credit or 0.0)
 
-            #compute the total of current move
+            # compute the total of current move
             data['debit'] = total < 0 and -total or 0.0
             data['credit'] = total > 0 and total or 0.0
-            #pick the good account on the journal accordingly if the next proposed line will be a debit or a credit
+            # pick the good account on the journal accordingly if the next proposed line will be a debit or a credit
             journal_data = journal_obj.browse(cr, uid, context['journal_id'], context=context)
             account = total > 0 and journal_data.default_credit_account_id or journal_data.default_debit_account_id
-            #map the account using the fiscal position of the partner, if needed
+            # map the account using the fiscal position of the partner, if needed
             part = data.get('partner_id') and partner_obj.browse(cr, uid, data['partner_id'], context=context) or False
             if account and data.get('partner_id'):
                 account = fiscal_pos_obj.map_account(cr, uid, part and part.property_account_position or False, account.id)
                 account = account_obj.browse(cr, uid, account, context=context)
-            data['account_id'] =  account and account.id or False
-            #compute the amount in secondary currency of the account, if needed
+            data['account_id'] = account and account.id or False
+            # compute the amount in secondary currency of the account, if needed
             if account and account.currency_id:
                 data['currency_id'] = account.currency_id.id
-                #set the context for the multi currency change
+                # set the context for the multi currency change
                 compute_ctx = context.copy()
                 compute_ctx.update({
-                        #the following 2 parameters are used to choose the currency rate, in case where the account
-                        #doesn't work with an outgoing currency rate method 'at date' but 'average'
+                        # the following 2 parameters are used to choose the currency rate, in case where the account
+                        # doesn't work with an outgoing currency rate method 'at date' but 'average'
                         'res.currency.compute.account': account,
                         'res.currency.compute.account_invert': True,
                     })
@@ -298,6 +326,23 @@ class alternate_ledger_move_line(osv.osv):
                     compute_ctx.update({'date': data['date']})
                 data['amount_currency'] = currency_obj.compute(cr, uid, account.company_id.currency_id.id, data['currency_id'], -total, context=compute_ctx)
         data = self._default_get_move_form_hook(cr, uid, data)
+
+        # account_streamline
+        move_obj = self.pool.get('account.move')
+        if context.get('journal_id'):
+            total_curr = 0.0
+            # in account.move form view, it is not possible to compute total debit and credit using
+            # a browse record. So we must use the context to pass the whole one2many field and compute the total
+            if context.get('line_id'):
+                for move_line_dict in move_obj.resolve_2many_commands(cr, uid, 'line_id', context.get('line_id'),
+                                                                      context=context):
+                    data['currency_id'] = data.get('currency_id') or move_line_dict.get('currency_id')
+                    total_curr += move_line_dict.get('debit_curr', 0.0) - move_line_dict.get('credit_curr', 0.0)
+
+            # compute the total of current move
+            data['debit_curr'] = total_curr < 0 and -total_curr or 0.0
+            data['credit_curr'] = total_curr > 0 and total_curr or 0.0
+
         return data
 
     def on_create_write(self, cr, uid, id, context=None):
@@ -350,7 +395,7 @@ class alternate_ledger_move_line(osv.osv):
         result = []
         for line in self.browse(cr, uid, ids, context=context):
             if line.ref:
-                result.append((line.id, (line.move_id.name or '')+' ('+line.ref+')'))
+                result.append((line.id, (line.move_id.name or '') + ' (' + line.ref + ')'))
             else:
                 result.append((line.id, line.move_id.name))
         return result
@@ -360,9 +405,9 @@ class alternate_ledger_move_line(osv.osv):
             context = {}
         if not args:
             return []
-        where = ' AND '.join(map(lambda x: '(abs(sum(debit-credit))'+x[1]+str(x[2])+')',args))
+        where = ' AND '.join(map(lambda x: '(abs(sum(debit-credit))' + x[1] + str(x[2]) + ')', args))
         cursor.execute('SELECT id, SUM(debit-credit) FROM alternate_ledger_move_line \
-                     GROUP BY id, debit, credit having '+where)
+                     GROUP BY id, debit, credit having ' + where)
         res = cursor.fetchall()
         if not res:
             return [('id', '=', '0')]
@@ -421,7 +466,7 @@ class alternate_ledger_move_line(osv.osv):
                 result.append(line.id)
         return result
 
-    def _get_reconcile(self, cr, uid, ids,name, unknow_none, context=None):
+    def _get_reconcile(self, cr, uid, ids, name, unknow_none, context=None):
         res = dict.fromkeys(ids, False)
         for line in self.browse(cr, uid, ids, context=context):
             if line.reconcile_id:
@@ -434,7 +479,7 @@ class alternate_ledger_move_line(osv.osv):
         'name': fields.char('Name', size=64, required=True),
         'quantity': fields.float(
             'Quantity',
-            digits=(16,2),
+            digits=(16, 2),
             help="""The optional quantity expressed by this line, eg:
                     number of product sold. The quantity is not a legal
                     requirement but is very useful for some reports.""",
@@ -454,7 +499,7 @@ class alternate_ledger_move_line(osv.osv):
             'Account',
             required=True,
             ondelete="cascade",
-            domain=[('type','<>','view'), ('type', '<>', 'closed')],
+            domain=[('type', '<>', 'view'), ('type', '<>', 'closed')],
             select=2,
         ),
         'move_id': fields.many2one(
@@ -539,7 +584,7 @@ class alternate_ledger_move_line(osv.osv):
             relation='account.journal',
             required=True,
             select=True,
-            store = {
+            store={
                 'alternate_ledger.move': (_get_move_lines, ['journal_id'], 20)
             }
         ),
@@ -551,7 +596,7 @@ class alternate_ledger_move_line(osv.osv):
                 relation='account.period',
                 required=True,
                 select=True,
-                store = {
+                store={
                     'alternate_ledger.move': (_get_move_lines, ['period_id'], 20)
             }
         ),
@@ -579,7 +624,7 @@ class alternate_ledger_move_line(osv.osv):
             type='date',
             required=True,
             select=True,
-            store = {
+            store={
                 'alternate_ledger.move': (_get_move_lines, ['date'], 20)
             }
         ),
@@ -590,10 +635,10 @@ class alternate_ledger_move_line(osv.osv):
             'Analytic lines'
         ),
         'centralisation': fields.selection(
-            [('normal','Normal'),
-             ('credit','Credit Centralisation'),
-             ('debit','Debit Centralisation'),
-             ('currency','Currency Adjustment')],
+            [('normal', 'Normal'),
+             ('credit', 'Credit Centralisation'),
+             ('debit', 'Debit Centralisation'),
+             ('currency', 'Currency Adjustment')],
             'Centralisation',
             size=8),
         'balance': fields.function(
@@ -602,8 +647,8 @@ class alternate_ledger_move_line(osv.osv):
             string='Balance'
         ),
         'state': fields.selection(
-            [('draft','Unbalanced'),
-             ('valid','Balanced')],
+            [('draft', 'Unbalanced'),
+             ('valid', 'Balanced')],
             'Status',
             readonly=True
         ),
@@ -638,7 +683,7 @@ class alternate_ledger_move_line(osv.osv):
             'account_id',
             'company_id',
             type='many2one',
-            relation='res.company', 
+            relation='res.company',
             string='Company',
             store=True,
             readonly=True
@@ -651,6 +696,53 @@ class alternate_ledger_move_line(osv.osv):
             string=_('Ledger Type'),
             store=False,
         ),
+
+        # account_streamline
+        'currency_id': fields.many2one('res.currency',
+                                    'Currency',
+                                    help="The mandatory currency code"),
+        'move_state': fields.related("move_id", "state",
+                                  type="char", string="status", readonly=True),
+        'debit_curr': fields.float('Debit T',
+                                digits_compute=dp.get_precision('Account'),
+                                help="This is the debit amount "
+                                     "in transaction currency"),
+        'credit_curr': fields.float('Credit T',
+                                 digits_compute=dp.get_precision('Account'),
+                                 help="This is the credit "
+                                      "amount in transaction currency"),
+        'currency_rate': fields.float('Used rate', digits=(12, 6)),
+        'date_reconcile': fields.function(_get_reconcile_date,
+                                       method=True,
+                                       string="Reconcile Date",
+                                       type='datetime',
+                                       store={
+                                           'account.move.line': (
+                                               lambda cr, uid, ids, c={}: ids,
+                                               [''],
+                                               20
+                                           ),
+                                       }),
+        'a1_id': fields.many2one('analytic.code', "Analysis Code 1",
+                              domain=[('nd_id.ns_id.model_name', '=',
+                                       'account_move_line'),
+                                      ('nd_id.ns_id.ordering', '=', '1')]),
+        'a2_id': fields.many2one('analytic.code', "Analysis Code 2",
+                              domain=[('nd_id.ns_id.model_name', '=',
+                                       'account_move_line'),
+                                      ('nd_id.ns_id.ordering', '=', '2')]),
+        'a3_id': fields.many2one('analytic.code', "Analysis Code 3",
+                              domain=[('nd_id.ns_id.model_name', '=',
+                                       'account_move_line'),
+                                      ('nd_id.ns_id.ordering', '=', '3')]),
+        'a4_id': fields.many2one('analytic.code', "Analysis Code 4",
+                              domain=[('nd_id.ns_id.model_name', '=',
+                                       'account_move_line'),
+                                      ('nd_id.ns_id.ordering', '=', '4')]),
+        'a5_id': fields.many2one('analytic.code', "Analysis Code 5",
+                              domain=[('nd_id.ns_id.model_name', '=',
+                                       'account_move_line'),
+                                      ('nd_id.ns_id.ordering', '=', '5')]),
     }
 
     def onchange_ledger_id(self, cr, uid, ids, ledger_id, context=None):
@@ -679,13 +771,20 @@ class alternate_ledger_move_line(osv.osv):
                 dt = period.date_start
         return dt
 
+    # account_streamline
     def _get_currency(self, cr, uid, context=None):
+        """
+        override default so the currency is
+        always present (coming from company)
+        """
         if context is None:
             context = {}
         if not context.get('journal_id', False):
             return False
-        cur = self.pool.get('account.journal').browse(cr, uid, context['journal_id']).currency
-        return cur and cur.id or False
+        jrn = self.pool.get('account.journal').browse(cr, uid,
+                                                      context['journal_id'])
+        cur = jrn.currency and jrn.currency.id or jrn.company_id.currency_id.id
+        return cur or False
 
     def _get_period(self, cr, uid, context=None):
         """
@@ -713,7 +812,7 @@ class alternate_ledger_move_line(osv.osv):
 
         journal_pool = self.pool.get('account.journal')
         if context.get('journal_type', False):
-            jids = journal_pool.search(cr, uid, [('type','=', context.get('journal_type'))])
+            jids = journal_pool.search(cr, uid, [('type', '=', context.get('journal_type'))])
             if not jids:
                 raise osv.except_osv(_('Configuration Error!'), _('Cannot find any account journal of %s type for this company.\n\nYou can create one in the menu: \nConfiguration/Journals/Journals.') % context.get('journal_type'))
             journal_id = jids[0]
@@ -737,7 +836,7 @@ class alternate_ledger_move_line(osv.osv):
     }
     _order = "date desc, id desc"
     _sql_constraints = [
-        ('credit_debit1', 'CHECK (credit*debit=0)',  'Wrong credit or debit value in accounting entry !'),
+        ('credit_debit1', 'CHECK (credit*debit=0)', 'Wrong credit or debit value in accounting entry !'),
         ('credit_debit2', 'CHECK (credit+debit>=0)', 'Wrong credit or debit value in accounting entry !'),
     ]
 
@@ -771,7 +870,7 @@ class alternate_ledger_move_line(osv.osv):
     def _check_date(self, cr, uid, ids, context=None):
         for l in self.browse(cr, uid, ids, context=context):
             if l.journal_id.allow_date:
-                if not time.strptime(l.date[:10],'%Y-%m-%d') >= time.strptime(l.period_id.date_start, '%Y-%m-%d') or not time.strptime(l.date[:10], '%Y-%m-%d') <= time.strptime(l.period_id.date_stop, '%Y-%m-%d'):
+                if not time.strptime(l.date[:10], '%Y-%m-%d') >= time.strptime(l.period_id.date_start, '%Y-%m-%d') or not time.strptime(l.date[:10], '%Y-%m-%d') <= time.strptime(l.period_id.date_stop, '%Y-%m-%d'):
                     return False
         return True
 
@@ -795,10 +894,13 @@ class alternate_ledger_move_line(osv.osv):
                     return False
         return True
 
+    # account_streamline
     def _check_currency_company(self, cr, uid, ids, context=None):
-        for l in self.browse(cr, uid, ids, context=context):
-            if l.currency_id.id == l.company_id.currency_id.id:
-                return False
+        """
+        disable check constraint on secondary currency.
+        The idea is to always have a currency and a
+        rate on every single move line.
+        """
         return True
 
     _constraints = [
@@ -807,13 +909,13 @@ class alternate_ledger_move_line(osv.osv):
         (_check_company_id, 'Account and Period must belong to the same company.', ['company_id']),
         (_check_date, 'The date of your Journal Entry is not in the defined period! You should change the date or remove this constraint from the journal.', ['date']),
         (_check_currency, 'The selected account of your Journal Entry forces to provide a secondary currency. You should remove the secondary currency on the account or select a multi-currency view on the journal.', ['currency_id']),
-        (_check_currency_and_amount, "You cannot create journal items with a secondary currency without recording both 'currency' and 'amount currency' field.", ['currency_id','amount_currency']),
+        (_check_currency_and_amount, "You cannot create journal items with a secondary currency without recording both 'currency' and 'amount currency' field.", ['currency_id', 'amount_currency']),
         (_check_currency_amount, 'The amount expressed in the secondary currency must be positive when the journal item is a debit and negative when if it is a credit.', ['amount_currency']),
         (_check_currency_company, "You cannot provide a secondary currency if it is the same than the company one." , ['currency_id']),
     ]
 
-    #TODO: ONCHANGE_ACCOUNT_ID: set account_tax_id
-    def onchange_currency(self, cr, uid, ids, account_id, amount, currency_id, date=False, journal=False, context=None):
+    # TODO: ONCHANGE_ACCOUNT_ID: set account_tax_id
+    def onchange_currency_(self, cr, uid, ids, account_id, amount, currency_id, date=False, journal=False, context=None):
         if context is None:
             context = {}
         account_obj = self.pool.get('account.account')
@@ -823,7 +925,7 @@ class alternate_ledger_move_line(osv.osv):
             return {}
         result = {}
         acc = account_obj.browse(cr, uid, account_id, context=context)
-        if (amount>0) and journal:
+        if (amount > 0) and journal:
             x = journal_obj.browse(cr, uid, journal).default_credit_account_id
             if x: acc = x
         context.update({
@@ -837,7 +939,25 @@ class alternate_ledger_move_line(osv.osv):
         }
         return result
 
-    def onchange_partner_id(self, cr, uid, ids, move_id, partner_id, account_id=None, debit=0, credit=0, date=False, journal=False, context=None):
+    # account_streamline
+    def onchange_currency(self, cr, uid, ids, account_id, debit, credit, currency_id, date=False, journal=False,
+                          context=None):
+        """override onchange to pass both debit and credit amount, not only signed amount
+        that might be computed only during the save process
+        """
+
+        amount = debit - credit
+        result = self.onchange_currency_(cr, uid, ids, account_id, amount, currency_id,
+                                                                  date=date, journal=journal, context=context)
+        # the context is already updated by the previous statement
+        context_rate = currency_id and self.pool.get('res.currency').browse(cr, uid, currency_id, context=context).rate
+
+        if 'value' in result:
+            result['value']['amount_currency'] = amount
+            result['value']['currency_rate'] = context_rate
+        return result
+
+    def onchange_partner_id_(self, cr, uid, ids, move_id, partner_id, account_id=None, debit=0, credit=0, date=False, journal=False, context=None):
         partner_obj = self.pool.get('res.partner')
         payment_term_obj = self.pool.get('account.payment.term')
         journal_obj = self.pool.get('account.journal')
@@ -865,7 +985,7 @@ class alternate_ledger_move_line(osv.osv):
                 val['date_maturity'] = res[0][0]
         if not account_id:
             id1 = part.property_account_payable.id
-            id2 =  part.property_account_receivable.id
+            id2 = part.property_account_receivable.id
             if jt:
                 if jt in ('sale', 'purchase_refund'):
                     val['account_id'] = fiscal_pos_obj.map_account(cr, uid, part and part.property_account_position or False, id2)
@@ -880,6 +1000,19 @@ class alternate_ledger_move_line(osv.osv):
                     d = self.onchange_account_id(cr, uid, ids, account_id=val['account_id'], partner_id=part.id, context=context)
                     val.update(d['value'])
         return {'value':val}
+
+    # account_streamline
+    def onchange_partner_id(self, cr, uid, ids, move_id, partner_id, account_id=None, debit=0, credit=0, date=False, journal=False, context=None):
+        '''
+        we override this function to set the date_maturity if it is not set
+        '''
+        self.onchange_partner_id_(cr, uid, ids, move_id,
+                                  partner_id, account_id,
+                                  debit, credit, date, journal,
+                                  context)
+        if 'date_maturity' in res['value'] and not res['value']['date_maturity']:
+            res['value']['date_maturity'] = date
+        return res
 
     def onchange_account_id(self, cr, uid, ids, account_id=False, partner_id=False, context=None):
         account_obj = self.pool.get('account.account')
@@ -931,7 +1064,7 @@ class alternate_ledger_move_line(osv.osv):
                 WHERE debit > 0 AND credit > 0 AND (last_reconciliation_date IS NULL OR max_date > last_reconciliation_date)
                 ORDER BY last_reconciliation_date""")
         ids = [x[0] for x in cr.fetchall()]
-        if not ids: 
+        if not ids:
             return []
 
         # To apply the ir_rules
@@ -959,7 +1092,7 @@ class alternate_ledger_move_line(osv.osv):
             else:
                 currency_id = line.company_id.currency_id
             if line.reconcile_id:
-                raise osv.except_osv(_('Warning'), _("Journal Item '%s' (id: %s), Move '%s' is already reconciled!") % (line.name, line.id, line.move_id.name)) 
+                raise osv.except_osv(_('Warning'), _("Journal Item '%s' (id: %s), Move '%s' is already reconciled!") % (line.name, line.id, line.move_id.name))
             if line.reconcile_partial_id:
                 for line2 in line.reconcile_partial_id.line_partial_ids:
                     if not line2.reconcile_id:
@@ -977,62 +1110,109 @@ class alternate_ledger_move_line(osv.osv):
                 else:
                     total += (line.debit or 0.0) - (line.credit or 0.0)
         if self.pool.get('res.currency').is_zero(cr, uid, currency_id, total):
-            res = self.reconcile(cr, uid, merges+unmerge, context=context, writeoff_acc_id=writeoff_acc_id, writeoff_period_id=writeoff_period_id, writeoff_journal_id=writeoff_journal_id)
+            res = self.reconcile(cr, uid, merges + unmerge, context=context, writeoff_acc_id=writeoff_acc_id, writeoff_period_id=writeoff_period_id, writeoff_journal_id=writeoff_journal_id)
             return res
         r_id = move_rec_obj.create(cr, uid, {
             'type': type,
-            'line_partial_ids': map(lambda x: (4,x,False), merges+unmerge)
+            'line_partial_ids': map(lambda x: (4, x, False), merges + unmerge)
         }, context=context)
         move_rec_obj.reconcile_partial_check(cr, uid, [r_id] + merges_rec, context=context)
         return True
 
-    def reconcile(self, cr, uid, ids, type='auto', writeoff_acc_id=False, writeoff_period_id=False, writeoff_journal_id=False, context=None):
+    # account_streamline
+    def reconcile(self, cr, uid, ids, type='auto',
+                  writeoff_acc_id=False, writeoff_period_id=False, writeoff_journal_id=False, context=None):
+        '''This method is completely overridden in order to include a full multicurrency support
+          The context will determine if second currency is used for reconciliation or not 'reconcile_second_currency'
+          In addition, when matching the transaction amounts, differences must be processed as
+          both exchange difference and write-off, when applicable.
+          Finally, the original code is documented for an easier maintenance.
+        '''
         account_obj = self.pool.get('account.account')
-        move_obj = self.pool.get('alternate_ledger.move')
+        move_obj = self.pool.get('account.move')
         move_rec_obj = self.pool.get('account.move.reconcile')
         partner_obj = self.pool.get('res.partner')
         currency_obj = self.pool.get('res.currency')
         lines = self.browse(cr, uid, ids, context=context)
         unrec_lines = filter(lambda x: not x['reconcile_id'], lines)
-        credit = debit = 0.0
-        currency = 0.0
+        credit = debit = credit_curr = debit_curr = 0.0
+        amount_currency_writeoff = writeoff = currency_rate_difference = 0.0
         account_id = False
         partner_id = False
+        currency_id = False
+
         if context is None:
             context = {}
+
         company_list = []
         for line in self.browse(cr, uid, ids, context=context):
             if company_list and not line.company_id.id in company_list:
-                raise osv.except_osv(_('Warning!'), _('To reconcile the entries company should be the same for all entries.'))
+                raise osv.except_osv(_('Warning!'), _('To reconcile the entries company '
+                                                      'should be the same for all entries.'))
             company_list.append(line.company_id.id)
+
         for line in unrec_lines:
-            if line.state <> 'valid':
+            # these are the received lines filtered out of already reconciled lines
+            # we compute allocation totals in both currencies
+            if line.state != 'valid':
                 raise osv.except_osv(_('Error!'),
-                        _('Entry "%s" is not valid !') % line.name)
+                                     _('Entry "%s" is not valid !') % line.name)
+
+            # control on second currency : must always be the same to authorise reconciliation on second currency
+            # TODO : the context key should be given by the reconciliation wizard
+            if context.get('reconcile_second_currency', True) and \
+                    currency_id and not currency_id == line['currency_id']['id']:
+                raise osv.except_osv(_('Error!'),
+                                     _('All entries must have the same second currency! Reconcile on company currency otherwise.'))
+            # control on account : reconciliation must be on one account only
+            # TODO : check accuracy of this control
+            if account_id and not account_id == line['account_id']['id']:
+                raise osv.except_osv(_('Error!'),
+                                     _('All entries must have the same account to be reconciled.'))
+
             credit += line['credit']
+            credit_curr += line['credit_curr']
             debit += line['debit']
-            currency += line['amount_currency'] or 0.0
+            debit_curr += line['debit_curr']
+            amount_currency_writeoff += line['amount_currency'] or 0.0
+
             account_id = line['account_id']['id']
             partner_id = (line['partner_id'] and line['partner_id']['id']) or False
-        writeoff = debit - credit
+            currency_id = line['currency_id'] and line['currency_id']['id'] or False
 
-        # Ifdate_p in context => take this date
-        if context.has_key('date_p') and context['date_p']:
-            date=context['date_p']
+        # we need some browse records
+        account = account_obj.browse(cr, uid, account_id, context=context)
+        company_currency = account.company_id.currency_id
+        currency = currency_obj.browse(cr, uid, currency_id, context=context)
+
+        # Use date in context or today
+        date = context.get('date_p', time.strftime('%Y-%m-%d'))
+        # If date_p in context => take this date
+        # this is so old school...
+        # if context.has_key('date_p') and context['date_p']:
+        #     date = context['date_p']
+        # else:
+        #     date = time.strftime('%Y-%m-%d')
+
+        # We will be using a context key to define the reconciliation currency (base or trans)
+        if context.get('reconcile_second_currency', True):
+            # the actual write off is the conversion of the second currency net amount to base currency at current date
+            writeoff = currency_obj.compute(cr, uid, currency.id, company_currency.id,
+                                            amount_currency_writeoff, context={'date': date})
+            currency_rate_difference = debit - credit - writeoff
         else:
-            date = time.strftime('%Y-%m-%d')
+            writeoff = debit - credit
 
         cr.execute('SELECT account_id, reconcile_id '\
-                   'FROM alternate_ledger_move_line '\
+                   'FROM account_move_line '\
                    'WHERE id IN %s '\
                    'GROUP BY account_id,reconcile_id',
-                   (tuple(ids), ))
+                   (tuple(ids),))
         r = cr.fetchall()
-        #TODO: move this check to a constraint in the account_move_reconcile object
+        # TODO: move this check to a constraint in the account_move_reconcile object
         if not unrec_lines:
             raise osv.except_osv(_('Error!'), _('Entry is already reconciled.'))
-        account = account_obj.browse(cr, uid, account_id, context=context)
-        if r[0][1] != None:
+        if r[0][1] is not None:
             raise osv.except_osv(_('Error!'), _('Some entries are already reconciled.'))
 
         if context.get('fy_closing'):
@@ -1040,74 +1220,150 @@ class alternate_ledger_move_line(osv.osv):
             # wizard used to close a fiscal year (and it doesn't give us any
             # writeoff_acc_id).
             pass
-        elif (not currency_obj.is_zero(cr, uid, account.company_id.currency_id, writeoff)) or \
-           (account.currency_id and (not currency_obj.is_zero(cr, uid, account.currency_id, currency))):
-            if not writeoff_acc_id:
-                raise osv.except_osv(_('Warning!'), _('You have to provide an account for the write off/exchange difference entry.'))
-            if writeoff > 0:
-                debit = writeoff
-                credit = 0.0
-                self_credit = writeoff
-                self_debit = 0.0
-            else:
-                debit = 0.0
-                credit = -writeoff
-                self_credit = 0.0
-                self_debit = -writeoff
-            # If comment exist in context, take it
-            if 'comment' in context and context['comment']:
-                libelle = context['comment']
-            else:
-                libelle = _('Write-Off')
+        else:
+        # this condition is replaced as we separate write off from exchange difference
+        # elif (not currency_obj.is_zero(cr, uid, account.company_id.currency_id, writeoff)) or \
+        #    (account.currency_id and (not currency_obj.is_zero(cr, uid, account.currency_id, currency))):
 
-            cur_obj = self.pool.get('res.currency')
-            cur_id = False
-            amount_currency_writeoff = 0.0
-            if context.get('company_currency_id',False) != context.get('currency_id',False):
-                cur_id = context.get('currency_id',False)
-                for line in unrec_lines:
-                    if line.currency_id and line.currency_id.id == context.get('currency_id',False):
-                        amount_currency_writeoff += line.amount_currency
-                    else:
-                        tmp_amount = cur_obj.compute(cr, uid, line.account_id.company_id.currency_id.id, context.get('currency_id',False), abs(line.debit-line.credit), context={'date': line.date})
-                        amount_currency_writeoff += (line.debit > 0) and tmp_amount or -tmp_amount
+            # create exchange difference transaction
+            if not currency_obj.is_zero(cr, uid, currency, currency_rate_difference):
+                if currency_rate_difference > 0:
+                    # this is a gain (account comes from account_voucher module)
+                    exchange_diff_acc_id = account.company_id.income_currency_exchange_account_id.id
+                    debit = currency_rate_difference
+                    credit = 0.0
+                    self_credit = currency_rate_difference
+                    self_debit = 0.0
+                else:
+                    # this is a loss
+                    exchange_diff_acc_id = account.company_id.expense_currency_exchange_account_id.id
+                    debit = 0.0
+                    credit = -currency_rate_difference
+                    self_credit = 0.0
+                    self_debit = -currency_rate_difference
 
-            writeoff_lines = [
-                (0, 0, {
-                    'name': libelle,
-                    'debit': self_debit,
-                    'credit': self_credit,
-                    'account_id': account_id,
+                libelle = _('Exchange difference')
+
+                exchange_diff_lines = [
+                    (0, 0, {
+                        'name': libelle,
+                        'debit': self_debit,
+                        'credit': self_credit,
+                        'account_id': account_id,
+                        'date': date,
+                        'partner_id': partner_id,
+                        'currency_id': currency_id or (account.currency_id.id or False),
+                        'amount_currency': 0.0
+                    }),
+                    (0, 0, {
+                        'name': libelle,
+                        'debit': debit,
+                        'credit': credit,
+                        'account_id': exchange_diff_acc_id,
+                        'analytic_account_id': context.get('analytic_id', False),
+                        'date': date,
+                        'partner_id': partner_id,
+                        'currency_id': currency_id or (account.currency_id.id or False),
+                        'amount_currency': 0.0
+                    })
+                ]
+
+                exchange_diff_move_id = move_obj.create(cr, uid, {
+                    'period_id': writeoff_period_id,
+                    'journal_id': writeoff_journal_id,
                     'date': date,
-                    'partner_id': partner_id,
-                    'currency_id': cur_id or (account.currency_id.id or False),
-                    'amount_currency': amount_currency_writeoff and -1 * amount_currency_writeoff or (account.currency_id.id and -1 * currency or 0.0)
-                }),
-                (0, 0, {
-                    'name': libelle,
-                    'debit': debit,
-                    'credit': credit,
-                    'account_id': writeoff_acc_id,
-                    'analytic_account_id': context.get('analytic_id', False),
-                    'date': date,
-                    'partner_id': partner_id,
-                    'currency_id': cur_id or (account.currency_id.id or False),
-                    'amount_currency': amount_currency_writeoff and amount_currency_writeoff or (account.currency_id.id and currency or 0.0)
+                    'state': 'draft',
+                    'line_id': exchange_diff_lines
                 })
-            ]
 
-            writeoff_move_id = move_obj.create(cr, uid, {
-                'period_id': writeoff_period_id,
-                'journal_id': writeoff_journal_id,
-                'date':date,
-                'state': 'draft',
-                'line_id': writeoff_lines
-            })
+                # The generated transaction needs to be added to the allocation block
+                exchange_diff_line_ids = self.search(cr, uid,
+                                                     [('move_id', '=',
+                                                       exchange_diff_move_id),
+                                                      ('account_id', '=',
+                                                       account_id)])
+                # the following case should never happen but still...
+                if account_id == exchange_diff_acc_id:
+                    exchange_diff_line_ids = [exchange_diff_line_ids[1]]
+                ids += exchange_diff_line_ids
 
-            writeoff_line_ids = self.search(cr, uid, [('move_id', '=', writeoff_move_id), ('account_id', '=', account_id)])
-            if account_id == writeoff_acc_id:
-                writeoff_line_ids = [writeoff_line_ids[1]]
-            ids += writeoff_line_ids
+            # create write off transaction
+            if not currency_obj.is_zero(cr, uid, company_currency, writeoff):
+                if not writeoff_acc_id:
+                    raise osv.except_osv(_('Warning!'), _('You have to provide an account '
+                                                          'for the write off entry.'))
+                if writeoff > 0:
+                    debit = writeoff
+                    credit = 0.0
+                    self_credit = writeoff
+                    self_debit = 0.0
+                else:
+                    debit = 0.0
+                    credit = -writeoff
+                    self_credit = 0.0
+                    self_debit = -writeoff
+                # If comment exist in context, take it
+                if 'comment' in context and context['comment']:
+                    libelle = context['comment']
+                else:
+                    libelle = _('Write-Off')
+
+                # this code is dead anyway as the context keys are never set anywhere!!!
+                # cur_id = False
+                # amount_currency_writeoff = 0.0
+                # if context.get('company_currency_id',False) != context.get('currency_id',False):
+                #     cur_id = context.get('currency_id',False)
+                #     for line in unrec_lines:
+                #         if line.currency_id and line.currency_id.id == context.get('currency_id',False):
+                #             amount_currency_writeoff += line.amount_currency
+                #         else:
+                #             tmp_amount = currency_obj.compute(cr, uid,
+                #                                               line.account_id.company_id.currency_id.id,
+                #                                               context.get('currency_id',False),
+                #                                               abs(line.debit-line.credit),
+                #                                               context={'date': line.date})
+                #             amount_currency_writeoff += (line.debit > 0) and tmp_amount or -tmp_amount
+
+                writeoff_lines = [
+                    (0, 0, {
+                        'name': libelle,
+                        'debit': self_debit,
+                        'credit': self_credit,
+                        'account_id': account_id,
+                        'date': date,
+                        'partner_id': partner_id,
+                        'currency_id': currency_id or (account.currency_id.id or False),
+                        'amount_currency':-1 * amount_currency_writeoff
+                    }),
+                    (0, 0, {
+                        'name': libelle,
+                        'debit': debit,
+                        'credit': credit,
+                        'account_id': writeoff_acc_id,
+                        'analytic_account_id': context.get('analytic_id', False),
+                        'date': date,
+                        'partner_id': partner_id,
+                        'currency_id': currency_id or (account.currency_id.id or False),
+                        'amount_currency': amount_currency_writeoff
+                    })
+                ]
+
+                writeoff_move_id = move_obj.create(cr, uid, {
+                    'period_id': writeoff_period_id,
+                    'journal_id': writeoff_journal_id,
+                    'date': date,
+                    'state': 'draft',
+                    'line_id': writeoff_lines
+                })
+
+                # when the write off is posted in the original account,
+                # the reconciliation block receives only the second computed line to add up to 0
+                # the other one is therefore left open
+                writeoff_line_ids = self.search(cr, uid, [('move_id', '=', writeoff_move_id), ('account_id', '=', account_id)])
+                # the following case should never happen but still...
+                if account_id == writeoff_acc_id:
+                    writeoff_line_ids = [writeoff_line_ids[1]]
+                ids += writeoff_line_ids
 
         r_id = move_rec_obj.create(cr, uid, {
             'type': type,
@@ -1118,7 +1374,7 @@ class alternate_ledger_move_line(osv.osv):
         # the id of the move.reconcile is written in the move.line (self) by the create method above
         # because of the way the line_id are defined: (4, x, False)
         for id in ids:
-            wf_service.trg_trigger(uid, 'alternate_ledger.move.line', id, cr)
+            wf_service.trg_trigger(uid, 'account.move.line', id, cr)
 
         if lines and lines[0]:
             partner_id = lines[0].partner_id and lines[0].partner_id.id or False
@@ -1131,18 +1387,18 @@ class alternate_ledger_move_line(osv.osv):
             context = {}
         context = self.convert_to_period(cr, user, context=context)
         if context.get('account_id', False):
-            cr.execute('SELECT code FROM account_account WHERE id = %s', (context['account_id'], ))
+            cr.execute('SELECT code FROM account_account WHERE id = %s', (context['account_id'],))
             res = cr.fetchone()
             if res:
-                res = _('Entries: ')+ (res[0] or '')
+                res = _('Entries: ') + (res[0] or '')
             return res
         if (not context.get('journal_id', False)) or (not context.get('period_id', False)):
             return False
         if context.get('search_default_journal_id', False):
             context['journal_id'] = context.get('search_default_journal_id')
-        cr.execute('SELECT code FROM account_journal WHERE id = %s', (context['journal_id'], ))
+        cr.execute('SELECT code FROM account_journal WHERE id = %s', (context['journal_id'],))
         j = cr.fetchone()[0] or ''
-        cr.execute('SELECT code FROM account_period WHERE id = %s', (context['period_id'], ))
+        cr.execute('SELECT code FROM account_period WHERE id = %s', (context['period_id'],))
         p = cr.fetchone()[0] or ''
         if j or p:
             return j + (p and (':' + p) or '')
@@ -1180,7 +1436,7 @@ class alternate_ledger_move_line(osv.osv):
         # use the first move ever created for this journal and period
         if context is None:
             context = {}
-        cr.execute('SELECT id, state, name FROM alternate_ledger_move WHERE journal_id = %s AND period_id = %s ORDER BY id limit 1', (context['journal_id'],context['period_id']))
+        cr.execute('SELECT id, state, name FROM alternate_ledger_move WHERE journal_id = %s AND period_id = %s ORDER BY id limit 1', (context['journal_id'], context['period_id']))
         res = cr.fetchone()
         if res:
             if res[1] != 'draft':
@@ -1226,9 +1482,67 @@ class alternate_ledger_move_line(osv.osv):
             move_obj.validate(cr, uid, move_ids, context=context)
         return result
 
-    def write(self, cr, uid, ids, vals, context=None, check=True, update_check=True):
+    # account_streamline
+
+    def is_move_posted(self, cr, uid, move_id, context=None):
+        """internal helper function
+        """
+        move_osv = self.pool.get('account.move')
+
+        if move_id:
+            move = move_osv.browse(cr, uid, move_id, context=context)
+            return move.state == 'posted'
+
+    def _compute_multicurrency(self, cr, uid, vals, context=None):
+
         if context is None:
-            context={}
+            context = {}
+
+        # some data to evaluate
+        account_obj = self.pool.get('account.account')
+        cur_obj = self.pool.get('res.currency')
+        amount_trans = vals.get('amount_currency', 0.0)
+        amount_curr = vals.get('debit_curr', 0.0) - vals.get('credit_curr', 0.0)
+        amount_base = vals.get('debit', 0.0) - vals.get('credit', 0.0)
+        currency_trans = vals.get('currency_id', False)
+
+        cur_browse = cur_obj.browse(cr, uid, currency_trans, context=context)
+
+        # report net currency amount if necessary
+        if amount_trans == 0.0 and not amount_curr == 0.0:
+            amount_trans = vals['amount_currency'] = amount_curr
+
+        # compute actual rate ONLY when amounts in BOTH base and transaction curr are given
+        if not amount_trans == 0.0 and currency_trans and not amount_base == 0.0:
+            # vals['currency_rate'] = cur_obj.round(cr, uid, cur_browse, abs(amount_trans / amount_base))
+            vals['currency_rate'] = abs(amount_trans / amount_base)
+
+        # make sure the secondary currency is always present by copying the base amount and currency
+        if 'account_id' in vals:
+            currency_base = account_obj.browse(cr, uid, vals['account_id'], context=context).company_id.currency_id.id
+            if amount_trans == 0.0 and (currency_trans == currency_base or not currency_trans):
+                amount_trans = vals['amount_currency'] = cur_obj.compute(cr, uid, currency_base,
+                                                                         currency_base,
+                                                                         vals.get('debit', 0.0) - vals.get('credit', 0.0),
+                                                                         context=context)
+
+                currency_trans = vals['currency_id'] = currency_base
+                cur_browse = cur_obj.browse(cr, uid, currency_trans, context=context)
+                vals['currency_rate'] = 1.0
+
+        #TODO : create proper tests!!!
+
+        # compute debit and credit in transaction currency when not provided
+        # this should happen only with generated transaction, not with manual entries
+        if not amount_trans == 0.0 and not vals.get('_manual_write', False):
+            vals['debit_curr'] = cur_obj.round(cr, uid, cur_browse, amount_trans > 0.0 and amount_trans)
+            vals['credit_curr'] = cur_obj.round(cr, uid, cur_browse, amount_trans < 0.0 and -amount_trans)
+
+        return vals
+
+    def write_(self, cr, uid, ids, vals, context=None, check=True, update_check=True):
+        if context is None:
+            context = {}
         move_obj = self.pool.get('alternate_ledger.move')
         account_obj = self.pool.get('account.account')
         journal_obj = self.pool.get('account.journal')
@@ -1259,7 +1573,7 @@ class alternate_ledger_move_line(osv.osv):
                     ctx['period_id'] = line.move_id.period_id.id
                 else:
                     ctx['period_id'] = line.period_id.id
-            #Check for centralisation
+            # Check for centralisation
             journal = journal_obj.browse(cr, uid, ctx['journal_id'], context=ctx)
             if journal.centralisation:
                 self._check_moves(cr, uid, context=ctx)
@@ -1274,6 +1588,67 @@ class alternate_ledger_move_line(osv.osv):
                         move_obj.write(cr, uid, [line.move_id.id], {'date': todo_date}, context=context)
         return result
 
+    # account_streamline
+    def write(self, cr, uid, ids, vals, context=None, check=True,
+              update_check=True):
+
+        if context is None:
+            context = {}
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+
+        # processing vals to get complete multicurrency data
+        vals['_manual_write'] = True
+        vals = self._compute_multicurrency(cr, uid, vals, context=context)
+
+        # enforce stricter security rules on
+        # the account.move.line / account.move relationship related to the
+        # posted status
+        target_move_id = vals.get('move_id', False)
+
+        target_journal_id = None
+        if target_move_id:
+            move_osv = self.pool.get('account.move')
+            target_journal_id = move_osv.browse(cr, uid, target_move_id,
+                                                context=context).journal_id.id
+
+        for aml in self.browse(cr, uid, ids, context=context):
+
+            current_move = getattr(aml, 'move_id', None)
+            if current_move:
+                current_move_id = aml.move_id.id
+                current_journal_id = aml.move_id.journal_id.id
+
+            else:
+                current_move_id = None
+                current_journal_id = None
+
+            # if the user tries to move away a line from an account_move which
+            # if already posted
+            if current_move_id and self.is_move_posted(
+                    cr, uid, current_move_id, context=context) and \
+                    target_move_id and \
+                    not current_move_id == target_move_id:
+                raise osv.except_osv(_('Error!'), msg_cannot_remove_line)
+
+            # if the user is trying to move an acm into an account_move
+            #  which is posted
+            if target_move_id and not target_move_id == current_move_id and \
+                    self.is_move_posted(cr, uid, target_move_id,
+                                        context=context):
+                raise osv.except_osv(_('Error!'), msg_invalid_move)
+
+            # we don't allow switching from one journal_id (journal type)
+            #  to the other even for draft entries
+            if target_journal_id and \
+                    not target_journal_id == current_journal_id:
+                raise osv.except_osv(_('Error!'), msg_invalid_journal)
+
+        return self.write_(
+            cr, uid, ids, vals,
+            context=context, check=check,
+            update_check=update_check)
+
     def _update_journal_check(self, cr, uid, journal_id, period_id, context=None):
         journal_obj = self.pool.get('account.journal')
         period_obj = self.pool.get('account.period')
@@ -1284,10 +1659,10 @@ class alternate_ledger_move_line(osv.osv):
         period = period_obj.browse(cr, uid, period_id, context=context)
         for (state,) in result:
             if state == 'done':
-                raise osv.except_osv(_('Error!'), _('You can not add/modify entries in a closed period %s of journal %s.' % (period.name,journal.name)))                
+                raise osv.except_osv(_('Error!'), _('You can not add/modify entries in a closed period %s of journal %s.' % (period.name, journal.name)))
         if not result:
             jour_period_obj.create(cr, uid, {
-                'name': (journal.code or journal.name)+':'+(period.name or ''),
+                'name': (journal.code or journal.name) + ':' + (period.name or ''),
                 'journal_id': journal.id,
                 'period_id': period.id
             })
@@ -1307,7 +1682,7 @@ class alternate_ledger_move_line(osv.osv):
                 done[t] = True
         return True
 
-    def create(self, cr, uid, vals, context=None, check=True):
+    def create_(self, cr, uid, vals, context=None, check=True):
         account_obj = self.pool.get('account.account')
         tax_obj = self.pool.get('account.tax')
         move_obj = self.pool.get('alternate_ledger.move')
@@ -1331,9 +1706,9 @@ class alternate_ledger_move_line(osv.osv):
             m = move_obj.browse(cr, uid, vals['move_id'])
             context['journal_id'] = m.journal_id.id
             context['period_id'] = m.period_id.id
-        #we need to treat the case where a value is given in the context for period_id as a string
+        # we need to treat the case where a value is given in the context for period_id as a string
         if 'period_id' in context and not isinstance(context.get('period_id', ''), (int, long)):
-            period_candidate_ids = self.pool.get('account.period').name_search(cr, uid, name=context.get('period_id',''))
+            period_candidate_ids = self.pool.get('account.period').name_search(cr, uid, name=context.get('period_id', ''))
             if len(period_candidate_ids) != 1:
                 raise osv.except_osv(_('Error!'), _('No period found or more than one period found for the given date.'))
             context['period_id'] = period_candidate_ids[0][0]
@@ -1347,13 +1722,13 @@ class alternate_ledger_move_line(osv.osv):
         vals['date'] = vals.get('date') or context.get('date')
         if not move_id:
             if journal.centralisation:
-                #Check for centralisation
+                # Check for centralisation
                 res = self._check_moves(cr, uid, context)
                 if res:
                     vals['move_id'] = res[0]
             if not vals.get('move_id', False):
                 if journal.sequence_id:
-                    #name = self.pool.get('ir.sequence').next_by_id(cr, uid, journal.sequence_id.id)
+                    # name = self.pool.get('ir.sequence').next_by_id(cr, uid, journal.sequence_id.id)
                     v = {
                         'date': vals.get('date', time.strftime('%Y-%m-%d')),
                         'period_id': context['period_id'],
@@ -1387,13 +1762,13 @@ class alternate_ledger_move_line(osv.osv):
                 if 'date' in vals:
                     ctx['date'] = vals['date']
                 vals['amount_currency'] = cur_obj.compute(cr, uid, account.company_id.currency_id.id,
-                    account.currency_id.id, vals.get('debit', 0.0)-vals.get('credit', 0.0), context=ctx)
+                    account.currency_id.id, vals.get('debit', 0.0) - vals.get('credit', 0.0), context=ctx)
         if not ok:
             raise osv.except_osv(_('Bad Account!'), _('You cannot use this general account in this journal, check the tab \'Entry Controls\' on the related journal.'))
 
-        if vals.get('analytic_account_id',False):
+        if vals.get('analytic_account_id', False):
             if journal.analytic_journal_id:
-                vals['analytic_lines'] = [(0,0, {
+                vals['analytic_lines'] = [(0, 0, {
                         'name': vals['name'],
                         'date': vals.get('date', time.strftime('%Y-%m-%d')),
                         'account_id': vals.get('analytic_account_id', False),
@@ -1424,11 +1799,11 @@ class alternate_ledger_move_line(osv.osv):
                 tax_sign = 'tax_sign'
             tmp_cnt = 0
             for tax in tax_obj.compute_all(cr, uid, [tax_id], total, 1.00, force_excluded=True).get('taxes'):
-                #create the base movement
+                # create the base movement
                 if tmp_cnt == 0:
                     if tax[base_code]:
                         tmp_cnt += 1
-                        self.write(cr, uid,[result], {
+                        self.write(cr, uid, [result], {
                             'tax_code_id': tax[base_code],
                             'tax_amount': tax[base_sign] * abs(total)
                         })
@@ -1437,8 +1812,8 @@ class alternate_ledger_move_line(osv.osv):
                         'move_id': vals['move_id'],
                         'name': tools.ustr(vals['name'] or '') + ' ' + tools.ustr(tax['name'] or ''),
                         'date': vals['date'],
-                        'partner_id': vals.get('partner_id',False),
-                        'ref': vals.get('ref',False),
+                        'partner_id': vals.get('partner_id', False),
+                        'ref': vals.get('ref', False),
                         'account_tax_id': False,
                         'tax_code_id': tax[base_code],
                         'tax_amount': tax[base_sign] * abs(total),
@@ -1448,19 +1823,19 @@ class alternate_ledger_move_line(osv.osv):
                     }
                     if data['tax_code_id']:
                         self.create(cr, uid, data, context)
-                #create the Tax movement
+                # create the Tax movement
                 data = {
                     'move_id': vals['move_id'],
                     'name': tools.ustr(vals['name'] or '') + ' ' + tools.ustr(tax['name'] or ''),
                     'date': vals['date'],
-                    'partner_id': vals.get('partner_id',False),
-                    'ref': vals.get('ref',False),
+                    'partner_id': vals.get('partner_id', False),
+                    'ref': vals.get('ref', False),
                     'account_tax_id': False,
                     'tax_code_id': tax[tax_code],
                     'tax_amount': tax[tax_sign] * abs(tax['amount']),
                     'account_id': tax[account_id] or vals['account_id'],
-                    'credit': tax['amount']<0 and -tax['amount'] or 0.0,
-                    'debit': tax['amount']>0 and tax['amount'] or 0.0,
+                    'credit': tax['amount'] < 0 and -tax['amount'] or 0.0,
+                    'debit': tax['amount'] > 0 and tax['amount'] or 0.0,
                 }
                 if data['tax_code_id']:
                     self.create(cr, uid, data, context)
@@ -1469,26 +1844,211 @@ class alternate_ledger_move_line(osv.osv):
         if check and ((not context.get('no_store_function')) or journal.entry_posted):
             tmp = move_obj.validate(cr, uid, [vals['move_id']], context)
             if journal.entry_posted and tmp:
-                move_obj.button_validate(cr,uid, [vals['move_id']], context)
+                move_obj.button_validate(cr, uid, [vals['move_id']], context)
         return result
 
+    # account_streamline
+    def create(self, cr, uid, vals, context=None):
+
+        # add a security check to ensure no one is
+        # creating new account.move.line inside and already posted account.move
+        #TODO : write proper tests!!!
+        move_id = vals.get('move_id', False)
+        if move_id and self.is_move_posted(cr, uid, move_id, context=context):
+            raise osv.except_osv(_('Error!'), msg_invalid_move)
+
+        # processing vals to get complete multicurrency data
+        vals = self._compute_multicurrency(cr, uid, vals, context=context)
+
+        return self.create_(cr, uid, vals,
+                            context=context)
+
     def list_periods(self, cr, uid, context=None):
-        ids = self.pool.get('account.period').search(cr,uid,[])
+        ids = self.pool.get('account.period').search(cr, uid, [])
         return self.pool.get('account.period').name_get(cr, uid, ids, context=context)
 
     def list_journals(self, cr, uid, context=None):
-        ng = dict(self.pool.get('account.journal').name_search(cr,uid,'',[]))
+        ng = dict(self.pool.get('account.journal').name_search(cr, uid, '', []))
         ids = ng.keys()
         result = []
         for journal in self.pool.get('account.journal').browse(cr, uid, ids, context=context):
-            result.append((journal.id,ng[journal.id],journal.type,
-                bool(journal.currency),bool(journal.analytic_journal_id)))
+            result.append((journal.id, ng[journal.id], journal.type,
+                bool(journal.currency), bool(journal.analytic_journal_id)))
         return result
 
     def list_ledgers(self, cr, uid, context=None):
         ledger_osv = self.pool.get('alternate_ledger.ledger_type')
         ids = ledger_osv.search(cr, uid, [], context=context)
         return ledger_osv.name_get(cr, uid, ids, context=context)
+
+    # account_streamline
+
+    def __modify_analysis_fields(self, doc, field, ans_dict, context):
+        '''
+        Factorization
+        '''
+        doc.xpath("//field[@name='%s']" % field)[0].\
+            set('modifiers', '{"tree_invisible": %s, "readonly": true}' %
+                str(((not 'analytic_view' in context) and
+                     (not 'complete_view' in context) and
+                     (not 'item_complete_view' in context) and
+                     (not 'item_analytic_view' in context)) or
+                    (not '1' in ans_dict)).lower())
+
+    def __set_column_invisible_by_context(self, doc, arch,
+                                          field, list_test,
+                                          context):
+        if not field in arch:
+            return
+        for test in list_test:
+            if test in context:
+                print field + " / " + test
+                doc.xpath("//field[@name='%s']" % field)[0].\
+                    set('modifiers',
+                        '{"tree_invisible": true, "readonly": true}'
+                    )
+                break
+
+    def __render_columns(self, doc, arch, context):
+        # Set the columns invisible depending on the context
+        self.__set_column_invisible_by_context(
+            doc, arch, 'partner_id',
+            [
+                'simple_view'
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'journal_id',
+            [
+                'analytic_view'
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'internal_sequence_number',
+            [
+                'simple_view',
+                'analytic_view',
+                'item_simple_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'date',
+            [
+                'simple_view',
+                'complete_view',
+                'item_complete_view',
+                'item_simple_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'date_maturity',
+            [
+                'simple_view',
+                'analytic_view',
+                'item_simple_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'date_created',
+            [
+                'simple_view',
+                'analytic_view',
+                'item_simple_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'currency_id',
+            [
+                'analytic_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'debit',
+            [
+                'analytic_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'credit',
+            [
+                'analytic_view',
+                'item_analytic_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'account_tax_id',
+            [
+                'simple_view',
+            ],
+            context
+        )
+        self.__set_column_invisible_by_context(
+            doc, arch, 'state',
+            [
+                'payment_view',
+            ],
+            context
+        )
+
+    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
+                        context=None, toolbar=False, submenu=False):
+        '''
+        Display analysis code in account move lines trees
+        '''
+        if context is None:
+            context = {}
+        res = super(alternate_ledger_move_line, self).\
+            fields_view_get(cr, uid, view_id=view_id,
+                            view_type=view_type, context=context,
+                            toolbar=toolbar, submenu=False)
+        ans_obj = self.pool.get('analytic.structure')
+
+        # display analysis codes only when present on a related structure,
+        # with dimension name as label
+        ans_ids = ans_obj.search(cr, uid,
+                                 [('model_name', '=', 'account_move_line')],
+                                 context=context)
+        ans_br = ans_obj.browse(cr, uid, ans_ids, context=context)
+        ans_dict = dict()
+        for ans in ans_br:
+            ans_dict[ans.ordering] = ans.nd_id.name
+        doc = etree.XML(res['arch'])
+        if 'fields' in res:
+            field = res['fields']
+            if 'a1_id' in field:
+                field['a1_id']['string'] = ans_dict.get('1', 'A1')
+                self.__modify_analysis_fields(doc, 'a1_id', ans_dict, context)
+            if 'a2_id' in field:
+                field['a2_id']['string'] = ans_dict.get('2', 'A2')
+                self.__modify_analysis_fields(doc, 'a2_id', ans_dict, context)
+            if 'a3_id' in field:
+                field['a3_id']['string'] = ans_dict.get('3', 'A3')
+                self.__modify_analysis_fields(doc, 'a3_id', ans_dict, context)
+            if 'a4_id' in field:
+                field['a4_id']['string'] = ans_dict.get('4', 'A4')
+                self.__modify_analysis_fields(doc, 'a4_id', ans_dict, context)
+            if 'a5_id' in field:
+                field['a5_id']['string'] = ans_dict.get('5', 'A5')
+                self.__modify_analysis_fields(doc, 'a5_id', ans_dict, context)
+            self.__render_columns(doc, res['fields'], context)
+
+        res['arch'] = etree.tostring(doc)
+        return res
 
 alternate_ledger_move_line()
 

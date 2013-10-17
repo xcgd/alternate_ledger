@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+# This file copies (and appropriately renames):
+# - The account_move provided by the account module.
+# - account_move modifications provided by the account_streamline module.
+# account_streamline changes are marked with and "account_streamline" comment.
+
 import logging
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from lxml import etree
 from operator import itemgetter
 import time
 
@@ -34,7 +40,7 @@ class alternate_ledger_move(osv.osv):
             company_id = user.company_id.id
         if context is None:
             context = {}
-        #put the company in context to find the good period
+        # put the company in context to find the good period
         ctx = context.copy()
         ctx.update({'company_id': company_id, 'account_period_prefer_normal': True})
         return {
@@ -65,10 +71,10 @@ class alternate_ledger_move(osv.osv):
           args = []
         ids = []
         if name:
-            ids += self.search(cr, user, [('name','ilike',name)]+args, limit=limit, context=context)
+            ids += self.search(cr, user, [('name', 'ilike', name)] + args, limit=limit, context=context)
 
         if not ids and name and type(name) == int:
-            ids += self.search(cr, user, [('id','=',name)]+args, limit=limit, context=context)
+            ids += self.search(cr, user, [('id', '=', name)] + args, limit=limit, context=context)
 
         if not ids:
             ids += self.search(cr, user, args, limit=limit, context=context)
@@ -83,7 +89,7 @@ class alternate_ledger_move(osv.osv):
         res = []
         data_move = self.pool.get('alternate_ledger.move').browse(cursor, user, ids, context=context)
         for move in data_move:
-            if move.state=='draft':
+            if move.state == 'draft':
                 name = '*' + str(move.id)
             else:
                 name = move.name
@@ -95,9 +101,9 @@ class alternate_ledger_move(osv.osv):
         period_ids = self.pool.get('account.period').find(cr, uid, context=ctx)
         return period_ids[0]
 
-    def _amount_compute(self, cr, uid, ids, name, args, context, where =''):
+    def _amount_compute(self, cr, uid, ids, name, args, context, where=''):
         if not ids: return {}
-        cr.execute( 'SELECT move_id, SUM(debit) '\
+        cr.execute('SELECT move_id, SUM(debit) '\
                     'FROM alternate_ledger_move_line '\
                     'WHERE move_id IN %s '\
                     'GROUP BY move_id', (tuple(ids),))
@@ -110,8 +116,8 @@ class alternate_ledger_move(osv.osv):
         ids = set()
         for cond in args:
             amount = cond[2]
-            if isinstance(cond[2],(list,tuple)):
-                if cond[1] in ['in','not in']:
+            if isinstance(cond[2], (list, tuple)):
+                if cond[1] in ['in', 'not in']:
                     amount = tuple(cond[2])
                 else:
                     continue
@@ -119,7 +125,7 @@ class alternate_ledger_move(osv.osv):
                 if cond[1] in ['=like', 'like', 'not like', 'ilike', 'not ilike', 'in', 'not in', 'child_of']:
                     continue
 
-            cr.execute("select move_id from alternate_ledger_move_line group by move_id having sum(debit) %s %%s" % (cond[1]),(amount,))
+            cr.execute("select move_id from alternate_ledger_move_line group by move_id having sum(debit) %s %%s" % (cond[1]), (amount,))
             res_ids = set(id[0] for id in cr.fetchall())
             ids = ids and (ids & res_ids) or res_ids
         if ids:
@@ -133,17 +139,17 @@ class alternate_ledger_move(osv.osv):
             'account.period',
             'Period',
             required=True,
-            states={'posted':[('readonly',True)]}
+            states={'posted':[('readonly', True)]}
         ),
         'journal_id': fields.many2one(
             'account.journal',
             'Journal',
             required=True,
-            states={'posted':[('readonly',True)]}
+            states={'posted':[('readonly', True)]}
         ),
         'state': fields.selection(
-            [('draft','Unposted'), 
-             ('posted','Posted')],
+            [('draft', 'Unposted'),
+             ('posted', 'Posted')],
             'Status',
             required=True,
             readonly=True,
@@ -160,7 +166,7 @@ class alternate_ledger_move(osv.osv):
             'alternate_ledger.move.line',
             'move_id',
             'Entries',
-            states={'posted':[('readonly',True)]}
+            states={'posted':[('readonly', True)]}
         ),
         'to_check': fields.boolean(
             'To Review',
@@ -186,7 +192,7 @@ class alternate_ledger_move(osv.osv):
         'date': fields.date(
             'Date',
             required=True,
-            states={'posted':[('readonly',True)]},
+            states={'posted':[('readonly', True)]},
             select=True
         ),
         'narration':fields.text('Internal Note'),
@@ -236,7 +242,7 @@ class alternate_ledger_move(osv.osv):
             ['journal_id']),
     ]
 
-    def post(self, cr, uid, ids, context=None):
+    def post_(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
         invoice = context.get('invoice', False)
@@ -246,7 +252,7 @@ class alternate_ledger_move(osv.osv):
             raise osv.except_osv(_('Error!'), _('You cannot validate a non-balanced entry.\nMake sure you have configured payment terms properly.\nThe latest payment term line should be of the "Balance" type.'))
         obj_sequence = self.pool.get('ir.sequence')
         for move in self.browse(cr, uid, valid_moves, context=context):
-            if move.name =='/':
+            if move.name == '/':
                 new_name = False
                 journal = move.journal_id
 
@@ -267,6 +273,62 @@ class alternate_ledger_move(osv.osv):
                    'WHERE id IN %s',
                    ('posted', tuple(valid_moves),))
         return True
+
+    # account_streamline
+    def _analysis_control(self, cr, uid, ids, context=None):
+        '''
+        This controls the account.move.line analysis dimensions settings set on account.account
+        It will perform this only when attempting to post a complete move and
+        will compile all errors coming from move lines in a single message
+        '''
+        # move_dict = {}
+        lines = []
+
+        ans_obj = self.pool.get('analytic.structure')
+        ans_ids = ans_obj.search(cr, uid,
+                                 [('model_name', '=', 'account_move_line')],
+                                 context=context)
+        ans_br = ans_obj.browse(cr, uid, ans_ids, context=context)
+        ans_dict = dict()
+        for ans in ans_br:
+             ans_dict[ans.ordering] = ans.nd_id.name
+
+        for move in self.browse(cr, uid, ids, context=context):
+            # line_dict = []
+            for aml in move.line_id:
+                dim_list = []
+                if aml.account_id.t1_ctl == '1' and not aml.a1_id:
+                    dim_list.append(ans_dict.get('1', 'A1').encode('utf8'))
+                if aml.account_id.t2_ctl == '1' and not aml.a2_id:
+                    dim_list.append(ans_dict.get('2', 'A2').encode('utf8'))
+                if aml.account_id.t3_ctl == '1' and not aml.a3_id:
+                    dim_list.append((ans_dict.get('3', 'A3').encode('utf8')))
+                if aml.account_id.t4_ctl == '1' and not aml.a4_id:
+                    dim_list.append((ans_dict.get('4', 'A4').encode('utf8')))
+                if aml.account_id.t5_ctl == '1' and not aml.a5_id:
+                    dim_list.append((ans_dict.get('5', 'A5').encode('utf8')))
+                if dim_list:
+                    # line_dict[aml.name.encode('utf8')] = dim_list
+                    tmp = [aml.name.encode('utf8')]
+                    tmp.append(dim_list)
+                    lines += tmp
+            # if lines:
+                # move_dict[move.ref.encode('utf8')] = line_dict
+
+        if lines:
+            msg_analysis = _("Unable to post! The following analysis codes are mandatory:")
+            msg_analysis += '\n'
+            msg_analysis += yaml.dump(lines)
+            raise osv.except_osv(_('Error!'), msg_analysis)
+
+    # account_streamline
+    def post(self, cr, uid, ids, context=None):
+        '''
+        override the post method so all lines can be check against analysis controls
+        '''
+        self._analysis_control(cr, uid, ids, context=context)
+
+        return self.post_(cr, uid, ids, context=context)
 
     def button_validate(self, cursor, user, ids, context=None):
         for move in self.browse(cursor, user, ids, context=context):
@@ -379,7 +441,7 @@ class alternate_ledger_move(osv.osv):
                 if line.invoice:
                     raise osv.except_osv(_('User Error!'),
                             _("Move cannot be deleted if linked to an invoice. (Invoice: %s - Move ID:%s)") % \
-                                    (line.invoice.number,move.name))
+                                    (line.invoice.number, move.name))
             line_ids = map(lambda x: x.id, move.line_id)
             context['journal_id'] = move.journal_id.id
             context['period_id'] = move.period_id.id
@@ -393,16 +455,16 @@ class alternate_ledger_move(osv.osv):
         move = self.browse(cr, uid, id, context=context)
         amount = 0
         for line in move.line_id:
-            amount+= (line.debit - line.credit)
+            amount += (line.debit - line.credit)
         return amount
 
     def _centralise(self, cr, uid, move, mode, context=None):
-        assert mode in ('debit', 'credit'), 'Invalid Mode' #to prevent sql injection
+        assert mode in ('debit', 'credit'), 'Invalid Mode'  # to prevent sql injection
         currency_obj = self.pool.get('res.currency')
         if context is None:
             context = {}
 
-        if mode=='credit':
+        if mode == 'credit':
             account_id = move.journal_id.default_debit_account_id.id
             mode2 = 'debit'
             if not account_id:
@@ -426,7 +488,7 @@ class alternate_ledger_move(osv.osv):
         else:
             context.update({'journal_id': move.journal_id.id, 'period_id': move.period_id.id})
             line_id = self.pool.get('alternate_ledger.move.line').create(cr, uid, {
-                'name': _(mode.capitalize()+' Centralisation'),
+                'name': _(mode.capitalize() + ' Centralisation'),
                 'centralisation': mode,
                 'partner_id': False,
                 'account_id': account_id,
@@ -449,9 +511,9 @@ class alternate_ledger_move(osv.osv):
 
         cr.execute('SELECT SUM(%s) FROM alternate_ledger_move_line WHERE move_id=%%s AND id!=%%s' % (mode,), (move.id, line_id2))
         result = cr.fetchone()[0] or 0.0
-        cr.execute('update alternate_ledger_move_line set '+mode2+'=%s where id=%s', (result, line_id))
+        cr.execute('update alternate_ledger_move_line set ' + mode2 + '=%s where id=%s', (result, line_id))
 
-        #adjust also the amount in currency if needed
+        # adjust also the amount in currency if needed
         cr.execute("select currency_id, sum(amount_currency) as amount_currency from alternate_ledger_move_line where move_id = %s and currency_id is not null group by currency_id", (move.id,))
         for row in cr.dictfetchall():
             currency_id = currency_obj.browse(cr, uid, row['currency_id'], context=context)
@@ -488,14 +550,14 @@ class alternate_ledger_move(osv.osv):
         if context and ('__last_update' in context):
             del context['__last_update']
 
-        valid_moves = [] #Maintains a list of moves which can be responsible to create analytic entries
+        valid_moves = []  # Maintains a list of moves which can be responsible to create analytic entries
         obj_analytic_line = self.pool.get('account.analytic.line')
         obj_move_line = self.pool.get('alternate_ledger.move.line')
         for move in self.browse(cr, uid, ids, context):
             # Unlink old analytic lines on move_lines
             for obj_line in move.line_id:
                 for obj in obj_line.analytic_lines:
-                    obj_analytic_line.unlink(cr,uid,obj.id)
+                    obj_analytic_line.unlink(cr, uid, obj.id)
 
             journal = move.journal_id
             amount = 0
@@ -505,7 +567,7 @@ class alternate_ledger_move(osv.osv):
             for line in move.line_id:
                 amount += line.debit - line.credit
                 line_ids.append(line.id)
-                if line.state=='draft':
+                if line.state == 'draft':
                     line_draft_ids.append(line.id)
 
                 if not company_id:
@@ -532,7 +594,7 @@ class alternate_ledger_move(osv.osv):
             account = {}
             account2 = {}
 
-            if journal.type in ('purchase','sale'):
+            if journal.type in ('purchase', 'sale'):
                 for line in move.line_id:
                     code = amount = 0
                     key = (line.account_id.id, line.tax_code_id.id)
@@ -575,6 +637,63 @@ class alternate_ledger_move(osv.osv):
         valid_moves = [move.id for move in valid_moves]
         return len(valid_moves) > 0 and valid_moves or False
 
+    # account_streamline
+    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
+                        context=None, toolbar=False, submenu=False):
+        '''
+        We display analysis codes on the account.move form inserting
+        them in the one2many field containing account move lines
+        '''
+        if context is None:
+            context = {}
+        res = super(alternate_ledger_move,
+                    self).fields_view_get(cr, uid, view_id=view_id,
+                                          view_type=view_type,
+                                          context=context,
+                                          toolbar=toolbar,
+                                          submenu=False)
+        ans_obj = self.pool.get('analytic.structure')
+
+        # display analysis codes only when present on a related structure,
+        # with dimension name as label
+        ans_ids = ans_obj.search(cr, uid,
+                                 [('model_name', '=', 'account_move_line')],
+                                 context=context)
+        ans_br = ans_obj.browse(cr, uid, ans_ids, context=context)
+        ans_dict = dict()
+        for ans in ans_br:
+            ans_dict[ans.ordering] = ans.nd_id.name
+        if 'fields' in res and 'line_id' in res['fields']:
+            doc = etree.XML(res['fields']['line_id']['views']['tree']['arch'])
+            line_fields = res['fields']['line_id']['views']['tree']['fields']
+            if 'a1_id' in line_fields:
+                line_fields['a1_id']['string'] = ans_dict.get('1', 'A1')
+                doc.xpath("//field[@name='a1_id']")[0].\
+                    set('modifiers', '{"tree_invisible": %s}' %
+                        str(not '1' in ans_dict).lower())
+            if 'a2_id' in line_fields:
+                line_fields['a2_id']['string'] = ans_dict.get('2', 'A2')
+                doc.xpath("//field[@name='a2_id']")[0].\
+                    set('modifiers', '{"tree_invisible": %s}' %
+                        str(not '2' in ans_dict).lower())
+            if 'a3_id' in line_fields:
+                line_fields['a3_id']['string'] = ans_dict.get('3', 'A3')
+                doc.xpath("//field[@name='a3_id']")[0].\
+                    set('modifiers', '{"tree_invisible": %s}' %
+                        str(not '3' in ans_dict).lower())
+            if 'a4_id' in line_fields:
+                line_fields['a4_id']['string'] = ans_dict.get('4', 'A4')
+                doc.xpath("//field[@name='a4_id']")[0].\
+                    set('modifiers', '{"tree_invisible": %s}' %
+                        str(not '4' in ans_dict).lower())
+            if 'a5_id' in line_fields:
+                line_fields['a5_id']['string'] = ans_dict.get('5', 'A5')
+                doc.xpath("//field[@name='a5_id']")[0].\
+                    set('modifiers', '{"tree_invisible": %s}' %
+                        str(not '5' in ans_dict).lower())
+            res['fields']['line_id']['views']['tree']['arch'] = etree.tostring(doc)
+        return res
+
 alternate_ledger_move()
 
 class alternate_ledger_move_reconcile(osv.osv):
@@ -589,9 +708,9 @@ class alternate_ledger_move_reconcile(osv.osv):
         'opening_reconciliation': fields.boolean('Opening Entries Reconciliation', help="Is this reconciliation produced by the opening of a new fiscal year ?."),
     }
     _defaults = {
-        'name': lambda self,cr,uid,ctx=None: self.pool.get('ir.sequence').get(cr, uid, 'account.reconcile', context=ctx) or '/',
+        'name': lambda self, cr, uid, ctx = None: self.pool.get('ir.sequence').get(cr, uid, 'account.reconcile', context=ctx) or '/',
     }
-    
+
     # You cannot unlink a reconciliation if it is a opening_reconciliation one,
     # you should use the generate opening entries wizard for that
     def unlink(self, cr, uid, ids, context=None):
@@ -600,7 +719,7 @@ class alternate_ledger_move_reconcile(osv.osv):
                 raise osv.except_osv(_('Error!'), _('You cannot unreconcile journal items if they has been generated by the \
                                                         opening/closing fiscal year process.'))
         return super(alternate_ledger_move_reconcile, self).unlink(cr, uid, ids, context=context)
-    
+
     # Look in the line_id and line_partial_ids to ensure the partner is the same or empty
     # on all lines. We allow that only for opening/closing period
     def _check_same_partner(self, cr, uid, ids, context=None):
@@ -620,7 +739,7 @@ class alternate_ledger_move_reconcile(osv.osv):
     _constraints = [
         (_check_same_partner, 'You can only reconcile journal items with the same partner.', ['line_id']),
     ]
-    
+
     def reconcile_partial_check(self, cr, uid, ids, type='auto', context=None):
         total = 0.0
         for rec in self.browse(cr, uid, ids, context=context):
@@ -641,12 +760,12 @@ class alternate_ledger_move_reconcile(osv.osv):
             return []
         result = []
         for r in self.browse(cr, uid, ids, context=context):
-            total = reduce(lambda y,t: (t.debit or 0.0) - (t.credit or 0.0) + y, r.line_partial_ids, 0.0)
+            total = reduce(lambda y, t: (t.debit or 0.0) - (t.credit or 0.0) + y, r.line_partial_ids, 0.0)
             if total:
                 name = '%s (%.2f)' % (r.name, total)
-                result.append((r.id,name))
+                result.append((r.id, name))
             else:
-                result.append((r.id,r.name))
+                result.append((r.id, r.name))
         return result
 
 alternate_ledger_move_reconcile()
