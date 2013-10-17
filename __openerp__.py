@@ -13,7 +13,6 @@
         'account_streamline',
     ],
     "data": [
-        'wizard/account_report_alternate_account_balance_view.xml',
         'views/account_view.xml',
         'views/ledger_type.xml',
         'views/menu.xml',
