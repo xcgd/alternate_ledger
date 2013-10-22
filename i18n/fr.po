@@ -306,6 +306,7 @@ msgstr "Vous ne pouvez pas créer d'écriture comptable sur un compte fermé."
 #: model:ir.ui.menu,name:alternate_ledger.menu_account_move_line_alternate
 msgid "Journal Items Ledger"
 msgstr "Ecritures comptables annexes"
+
 #. module: alternate_ledger
 #: model:ir.model,name:alternate_ledger.model_alternate_ledger_move_reconcile
 msgid "Account Reconciliation"
