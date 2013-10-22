@@ -1,0 +1,662 @@
+# Translation of OpenERP Server.
+# This file contains the translation of the following modules:
+#	* alternate_ledger
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenERP Server 7.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-10-22 12:07+0000\n"
+"PO-Revision-Date: 2013-10-22 12:07+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Reconciliation"
+msgstr "Reconciliation"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,amount_residual:0
+msgid "The residual amount on a receivable or payable of\n"
+"                    a journal entry expressed in the company currency."
+msgstr "Le montant residuel d'un montant sur une créance ou à payer pour une entrée de journal exprimée dans la devis de l'entreprise."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,centralisation:0
+msgid "Centralisation"
+msgstr "Centralisation"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,statement_id:0
+msgid "Statement"
+msgstr "Déclaration"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,move_id:0
+msgid "The move of this entry line."
+msgstr "Le mouvement d'une écriture comptable."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,amount_currency:0
+msgid "The amount expressed in an optional other\n"
+"                    currency if it is a multi-currency entry."
+msgstr "Le montant exprimé dans une autre devise optionnelle s'il s'agit d'une entrée multi-devises."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,company_id:0
+#: field:alternate_ledger.move.line,company_id:0
+msgid "Company"
+msgstr "Société"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move,state:0
+msgid "All manually created new journal entries\n"
+"                    are usually in the status 'Unposted', \n"
+"                    but you can set the option to skip that \n"
+"                    status on the related journal. In that \n"
+"                    case, they will behave as journal entries \n"
+"                    automatically created by the system on document \n"
+"                    validation (invoices, bank statements...) \n"
+"                    and will be created in 'Posted' status."
+msgstr "Toutes les nouvelles pièces comptables créées manuellement sont généralement dans le statut «non affichée», 
+mais vous pouvez configurer l'option de sauter ce statut à la revue correspondante. 
+Dans ce cas, ils se comporteront comme les pièces comptables créées automatiquement par le système de validation de documents (factures, relevés bancaires ...) et seront créés dans le statut «Publié».."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,line_id:0
+msgid "Entries"
+msgstr "Ecritures"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,centralisation:0
+msgid "Debit Centralisation"
+msgstr "Debit Centralisation"
+
+#. module: alternate_ledger
+#: field:account.balance.report,no_opening:0
+msgid "No Opening"
+msgstr "Pas d'ouverture"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Total Credit"
+msgstr "Total Credit"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,account_id:0
+#: model:ir.model,name:alternate_ledger.model_account_account
+msgid "Account"
+msgstr "Compte"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move,to_check:0
+msgid "Check this box if you are unsure of that \n"
+"                    journal entry and if you want to note it \n"
+"                    as 'to be reviewed' by an accounting expert."
+msgstr "Cochez cette case si vous n'êtes pas sûr(e) de cette écriture comptable et si vous voulez le noter comme 'A revoir' par un expert comptable."
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Taxes"
+msgstr "Taxes"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Total Debit"
+msgstr "Total Debit"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: field:alternate_ledger.move,amount:0
+#: view:alternate_ledger.move.line:0
+msgid "Amount"
+msgstr "Montant"
+
+#. module: alternate_ledger
+#: sql_constraint:alternate_ledger.move.line:0
+msgid "Wrong credit or debit value in accounting entry !"
+msgstr "Mauvaise valeur credit ou debit en écriture comptable !"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "The amount expressed in the secondary currency must be positive when the journal item is a debit and negative when if it is a credit."
+msgstr "Le montant exprimé dans la monnaie secondaire doit être positif lorsque l'écriture comptable est un débit et négatif quand s'il s'agit d'un crédit."
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move:0
+msgid "You cannot create more than one move per period on a centralized journal."
+msgstr "Vous ne pouvez pas créer plus d'un mouvement par période sur une revue centralisée."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,reconcile_id:0
+msgid "Reconcile"
+msgstr "Reconcilier"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,ref:0
+#: field:alternate_ledger.move.line,ref:0
+msgid "Reference"
+msgstr "Reference"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "You cannot provide a secondary currency if it is the same than the company one."
+msgstr "Vous ne pouvez pas fournir une monnaie secondaire si elle est la même que l'entreprise."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,account_tax_id:0
+msgid "Tax"
+msgstr "Taxe"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "The date of your Journal Entry is not in the defined period! You should change the date or remove this constraint from the journal."
+msgstr "La date des pièces comptables n'est pas dans la période définie! Vous devez changer la date ou supprimer cette contrainte des pièces.."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,partner_id:0
+#: field:alternate_ledger.move.line,partner_id:0
+msgid "Partner"
+msgstr "Partenaire"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,move_id:0
+msgid "Journal Entry"
+msgstr "Pièces comptables"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,blocked:0
+msgid "No Follow-up"
+msgstr "Pas de suivi"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,period_id:0
+#: field:alternate_ledger.move.line,period_id:0
+msgid "Period"
+msgstr "Période"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+msgid "Journal Entries"
+msgstr "Pièces comptables"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,quantity:0
+msgid "The optional quantity expressed by this line, eg:\n"
+"                    number of product sold. The quantity is not a legal\n"
+"                    requirement but is very useful for some reports."
+msgstr "La quantité optionnelle exprimée par cette ligne, eg:\n"
+"                    nombre de produit vendu.La quantité n'est pas une obligation legale\n"
+"                    mais est très utile pour certains rapports."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,debit:0
+msgid "Debit"
+msgstr "Débit"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.reconcile,type:0
+msgid "Type"
+msgstr "Type"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+msgid "Cancel Entry"
+msgstr "Annuler la pièce"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,analytic_account_id:0
+msgid "Analytic Account"
+msgstr "Compte Analytique"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,tax_code_id:0
+msgid "Tax Account"
+msgstr "Compte de taxes"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,product_uom_id:0
+msgid "Unit of Measure"
+msgstr "Unité de mesure"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Dates"
+msgstr "Dates"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,date_maturity:0
+msgid "This field is used for payable and receivable journal entries.\n"
+"                    You can put the limit date for the payment of this line."
+msgstr "Ce champs est utilisé pour les pièces comptables débitrices et créditrices .\n"
+"                    Vous pouvez mettre la date limite pour le paiement de cette écriture."
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Accounting Documents"
+msgstr "Documents comptables"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "Account and Period must belong to the same company."
+msgstr "Compte et période doivent appartenir à la même entreprise."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.reconcile,opening_reconciliation:0
+msgid "Is this reconciliation produced by the opening of a new fiscal year ?."
+msgstr "Est-ce la réconciliation produite par l'ouverture d'un nouvel exercice ?."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,date_maturity:0
+msgid "Due date"
+msgstr "Echéance"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,to_check:0
+msgid "To Review"
+msgstr "A verifier"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "The selected account of your Journal Entry forces to provide a secondary currency. You should remove the secondary currency on the account or select a multi-currency view on the journal."
+msgstr "Le compte choisi dans les pièces comptables oblige à fournir une seconde devise. Vous devez supprimer la devise secondaire sur le compte ou sélectionnez une vue multi-devises sur la pièce"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+#: field:alternate_ledger.move.line,currency_id:0
+msgid "Currency"
+msgstr "Devise"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,tax_code_id:0
+msgid "The Account can either be a base tax\n"
+"                    code or a tax code account."
+msgstr "Le compte peut être soit un code taxe de base\n"
+"                    ou un code de taxe de compte."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,currency_id:0
+msgid "The optional other currency if it is a multi-currency entry."
+msgstr "L'autre devise facultative si c'est une pièce multi-devises."
+
+#. module: alternate_ledger
+#: model:ir.model,name:alternate_ledger.model_alternate_ledger_ledger_type
+msgid "alternate_ledger.ledger_type"
+msgstr "alternate_ledger.ledger_type"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "You cannot create journal items on closed account."
+msgstr "Vous ne pouvez pas créer d'écriture comptable sur un compte fermé."
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,name:alternate_ledger.action_move_line_alternate
+#: model:ir.ui.menu,name:alternate_ledger.menu_account_move_line_alternate
+msgid "Journal Items Ledger"
+msgstr "Ecritures comptables annexes"
+#. module: alternate_ledger
+#: model:ir.model,name:alternate_ledger.model_alternate_ledger_move_reconcile
+msgid "Account Reconciliation"
+msgstr "Lettrage de compte"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,tax_amount:0
+msgid "If the Tax account is a tax code account, this field\n"
+"                    will contain the taxed amount.If the tax account is \n"
+"                    base tax code, this field will contain the basic \n"
+"                    amount(without tax)."
+msgstr "Si le compte de taxes est un compte du code des impôts, ce champ \n"
+"                    contient le montant taxé. Si le compte de taxes est \n"
+"                   un code taxe de base, ce champ contient le montant  \n"
+"                    de base(sans taxes)."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.reconcile,line_partial_ids:0
+msgid "Partial Entry lines"
+msgstr "Ecriture  comptable partielle"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,statement_id:0
+msgid "The bank statement used for bank reconciliation"
+msgstr "Le relevé de compte bancaire utilisé pour le rapprochement bancaire"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,state:0
+msgid "Unbalanced"
+msgstr "Déséquilibré"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,state:0
+#: field:alternate_ledger.move.line,state:0
+msgid "Status"
+msgstr "Statut"
+
+#. module: alternate_ledger
+#: field:account.balance.report,ledger_id:0
+#: view:alternate_ledger.ledger_type:0
+#: field:alternate_ledger.move,ledger_id:0
+#: field:alternate_ledger.move.line,ledger_id:0
+#: model:ir.actions.act_window,name:alternate_ledger.action_ledger_type
+#: model:ir.ui.menu,name:alternate_ledger.menu_ledger_type
+msgid "Ledger Type"
+msgstr "Livre annexe"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,blocked:0
+msgid "You can check this box to mark this journal\n"
+"                    item as a litigation with the associated partner"
+msgstr "Vous pouvez cocher cette case pour marquer cette écriture comptable comme un litige avec le partenaire associé"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,centralisation:0
+msgid "Normal"
+msgstr "Normal"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+msgid "Total Amount"
+msgstr "Montant total"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move,state:0
+msgid "Unposted"
+msgstr "Non posté"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,date:0
+msgid "Date"
+msgstr "Date"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move,balance:0
+msgid "This is a field only used for internal purpose\n"
+"                    and shouldn't be displayed"
+msgstr C'est un champ uniquement utilisé pour objectif interne'\n"
+"                    et ne devrait pas être affiché"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+msgid "Post"
+msgstr "Poster"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: field:alternate_ledger.move,narration:0
+#: field:alternate_ledger.move.line,narration:0
+msgid "Internal Note"
+msgstr "Note interne"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,date_created:0
+#: field:alternate_ledger.move.reconcile,create_date:0
+msgid "Creation date"
+msgstr "Creation de date"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,credit:0
+msgid "Credit"
+msgstr "Credit"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,amount_currency:0
+msgid "Amount Currency"
+msgstr "Montant de devise"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,amount_residual_currency:0
+msgid "The residual amount on a receivable or payable of a\n"
+"                    journal entry expressed in its currency (maybe\n"
+"                    different of the company currency)."
+msgstr "Le montant résiduel sur un débit ou crédit d'une écriture comptable exprimée dans sa devise (Peut être différent de la devise de l'entreprise.")
+                    
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,balance:0
+msgid "Balance"
+msgstr "Balance"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "You cannot create journal items with a secondary currency without recording both 'currency' and 'amount currency' field."
+msgstr Vous ne pouvez pas créer d'écritures comptables avec une monnaie secondaire sans enregistrer à la fois le champ 'devise' et le champ 'montant' de la devise.
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,quantity:0
+msgid "Quantity"
+msgstr "Quantité"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.reconcile,opening_reconciliation:0
+msgid "Opening Entries Reconciliation"
+msgstr "Opening Entries Reconciliation"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,amount_residual:0
+msgid "Residual Amount"
+msgstr Montant résiduel"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,analytic_lines:0
+msgid "Analytic lines"
+msgstr "Lignes analytiques"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.reconcile:0
+msgid "You can only reconcile journal items with the same partner."
+msgstr "Vous ne pouvez concilier des écritures comptables avec le même partenaire."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,name:0
+msgid "Number"
+msgstr "Nombre"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,invoice:0
+msgid "Invoice"
+msgstr "Facture"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,state:0
+msgid "Balanced"
+msgstr "Equilibré"
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,help:alternate_ledger.action_move_line_alternate
+msgid "<p class=\"oe_view_nocontent_create\">\n"
+"                    Select the period and the journal you want to fill.\n"
+"                </p><p>\n"
+"                    This view can be used by accountants in order to quickly record\n"
+"                    entries in OpenERP. If you want to record a supplier invoice,\n"
+"                    start by recording the line of the expense account. OpenERP\n"
+"                    will propose to you automatically the Tax related to this\n"
+"                    account and the counterpart \"Account Payable\".\n"
+"                </p>\n"
+"            "
+msgstr "<p class=\"oe_view_nocontent_create\">\n"
+"                    Selectionner la période et le journal que vous voulez remplir.\n"
+"                </p><p>\n"
+"                    Cette vue peut être utilisée par les comptables pour enregistrer rapidement\n"
+"                    des écritures dans OpenERP. Si vous souhaitez enregistrer une facture fournisseur,\n"
+"                   "commencer par l'enregistrement de la ligne du compte de dépenses. OpenERP\n"
+"                   vous proposera automatiquement la taxe liée à ce compte  \n"
+"                    et sa contrepartie \"Compte à payer\".\n"
+"                </p>\n"
+"            "
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,balance:0
+msgid "balance"
+msgstr "balance"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+#: model:ir.model,name:alternate_ledger.model_alternate_ledger_move_line
+msgid "Journal Items"
+msgstr "Ecritures Journaux"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Information"
+msgstr "Information"
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,help:alternate_ledger.action_move_alternate
+msgid "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create a journal entry.\n"
+"                </p><p>\n"
+"                    A journal entry consists of several journal items, each of\n"
+"                    which is either a debit or a credit transaction.\n"
+"                </p><p>\n"
+"                    OpenERP automatically creates one journal entry per accounting\n"
+"                    document: invoice, refund, supplier payment, bank statements,\n"
+"                    etc. So, you should record journal entries manually only/mainly\n"
+"                    for miscellaneous operations.\n"
+"                </p>\n"
+"            "
+msgstr "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create a journal entry.\n"
+"                </p><p>\n"
+"                    A journal entry consists of several journal items, each of\n"
+"                    which is either a debit or a credit transaction.\n"
+"                </p><p>\n"
+"                    OpenERP automatically creates one journal entry per accounting\n"
+"                    document: invoice, refund, supplier payment, bank statements,\n"
+"                    etc. So, you should record journal entries manually only/mainly\n"
+"                    for miscellaneous operations.\n"
+"                </p>\n"
+"            "
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Add an internal note..."
+msgstr "Ajoutez une note..."
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Analytic"
+msgstr "Analytic"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,centralisation:0
+msgid "Currency Adjustment"
+msgstr "Ecarts de change"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,tax_amount:0
+msgid "Tax/Base Amount"
+msgstr "Montant"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,product_id:0
+msgid "Product"
+msgstr "Produit"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,journal_id:0
+#: field:alternate_ledger.move.line,journal_id:0
+msgid "Journal"
+msgstr "Journal"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,amount_residual_currency:0
+msgid "Residual Amount in Currency"
+msgstr "Montant résiduel dans la devise"
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,name:alternate_ledger.action_move_alternate
+#: model:ir.ui.menu,name:alternate_ledger.menu_account_move_alternate
+msgid "Journal Entries Ledger"
+msgstr "Pièces comptables annexes"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move,state:0
+msgid "Posted"
+msgstr "Posté"
+
+#. module: alternate_ledger
+#: field:account.account,ledger_types:0
+msgid "Ledger Types"
+msgstr "Livres annexe"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.ledger_type,name:0
+#: field:alternate_ledger.move.line,name:0
+#: field:alternate_ledger.move.reconcile,name:0
+msgid "Name"
+msgstr "Nom"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Analytic Lines"
+msgstr "Ecritures Analytiques"
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "You cannot create journal items on an account of type view."
+msgstr "Vous ne pouvez pas créer d'écritures comptables sur un compte de type vue."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,reconcile_partial_id:0
+msgid "Partial Reconcile"
+msgstr "Lettrage partiel d'écriture"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,date:0
+msgid "Effective date"
+msgstr "Date"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "Journal Item"
+msgstr "Ecritures"
+
+#. module: alternate_ledger
+#: selection:alternate_ledger.move.line,centralisation:0
+msgid "Credit Centralisation"
+msgstr "Centralisation Credit "
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: model:ir.model,name:alternate_ledger.model_alternate_ledger_move
+msgid "Account Entry"
+msgstr "Ecriture comptable"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.reconcile,line_id:0
+msgid "Entry Lines"
+msgstr "Lignes d'entrée"
+
+#. module: alternate_ledger
+#: model:ir.model,name:alternate_ledger.model_account_balance_report
+msgid "Trial Balance Report"
+msgstr "Balance générale"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0
+#: view:alternate_ledger.move.line:0
+msgid "States"
+msgstr "Etat"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,reconcile:0
+msgid "Reconcile Ref"
+msgstr "Reconcile Ref"
+
