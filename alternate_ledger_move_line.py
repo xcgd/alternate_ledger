@@ -1006,7 +1006,7 @@ class alternate_ledger_move_line(osv.osv):
         '''
         we override this function to set the date_maturity if it is not set
         '''
-        self.onchange_partner_id_(cr, uid, ids, move_id,
+        res = self.onchange_partner_id_(cr, uid, ids, move_id,
                                   partner_id, account_id,
                                   debit, credit, date, journal,
                                   context)
