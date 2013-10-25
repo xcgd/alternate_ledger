@@ -53,8 +53,8 @@ class alternate_ledger_move_line(osv.osv):
 
     # account_streamline
     def _get_reconcile_date(self, cr, uid, ids, field_name, arg, context):
-        reconcile_osv = self.pool.get("account.move.reconcile")
-        move_line_osv = self.pool.get("account.move.line")
+        reconcile_osv = self.pool.get("alternate_ledger.move.reconcile")
+        move_line_osv = self.pool.get("alternate_ledger.move.line")
         result = {}
         if (not reconcile_osv) or (not move_line_osv):
             return None
@@ -328,7 +328,7 @@ class alternate_ledger_move_line(osv.osv):
         data = self._default_get_move_form_hook(cr, uid, data)
 
         # account_streamline
-        move_obj = self.pool.get('account.move')
+        move_obj = self.pool.get('alternate_ledger.move')
         if context.get('journal_id'):
             total_curr = 0.0
             # in account.move form view, it is not possible to compute total debit and credit using
@@ -532,14 +532,14 @@ class alternate_ledger_move_line(osv.osv):
             select=1
         ),
         'reconcile_id': fields.many2one(
-            'account.move.reconcile',
+            'alternate_ledger.move.reconcile',
             'Reconcile',
             readonly=True,
             ondelete='set null',
             select=2
         ),
         'reconcile_partial_id': fields.many2one(
-            'account.move.reconcile',
+            'alternate_ledger.move.reconcile',
             'Partial Reconcile',
             readonly=True,
             ondelete='set null',
@@ -717,7 +717,7 @@ class alternate_ledger_move_line(osv.osv):
                                        string="Reconcile Date",
                                        type='datetime',
                                        store={
-                                           'account.move.line': (
+                                           'alternate_ledger.move.line': (
                                                lambda cr, uid, ids, c={}: ids,
                                                [''],
                                                20
@@ -1073,7 +1073,7 @@ class alternate_ledger_move_line(osv.osv):
         return partner_obj.name_get(cr, uid, ids, context=context)
 
     def reconcile_partial(self, cr, uid, ids, type='auto', context=None, writeoff_acc_id=False, writeoff_period_id=False, writeoff_journal_id=False):
-        move_rec_obj = self.pool.get('account.move.reconcile')
+        move_rec_obj = self.pool.get('alternate_ledger.move.reconcile')
         merges = []
         unmerge = []
         total = 0.0
@@ -1129,8 +1129,8 @@ class alternate_ledger_move_line(osv.osv):
           Finally, the original code is documented for an easier maintenance.
         '''
         account_obj = self.pool.get('account.account')
-        move_obj = self.pool.get('account.move')
-        move_rec_obj = self.pool.get('account.move.reconcile')
+        move_obj = self.pool.get('alternate_ledger.move')
+        move_rec_obj = self.pool.get('alternate_ledger.move.reconcile')
         partner_obj = self.pool.get('res.partner')
         currency_obj = self.pool.get('res.currency')
         lines = self.browse(cr, uid, ids, context=context)
@@ -1374,7 +1374,7 @@ class alternate_ledger_move_line(osv.osv):
         # the id of the move.reconcile is written in the move.line (self) by the create method above
         # because of the way the line_id are defined: (4, x, False)
         for id in ids:
-            wf_service.trg_trigger(uid, 'account.move.line', id, cr)
+            wf_service.trg_trigger(uid, 'alternate_ledger.move.line', id, cr)
 
         if lines and lines[0]:
             partner_id = lines[0].partner_id and lines[0].partner_id.id or False
@@ -1487,7 +1487,7 @@ class alternate_ledger_move_line(osv.osv):
     def is_move_posted(self, cr, uid, move_id, context=None):
         """internal helper function
         """
-        move_osv = self.pool.get('account.move')
+        move_osv = self.pool.get('alternate_ledger.move')
 
         if move_id:
             move = move_osv.browse(cr, uid, move_id, context=context)
@@ -1608,7 +1608,7 @@ class alternate_ledger_move_line(osv.osv):
 
         target_journal_id = None
         if target_move_id:
-            move_osv = self.pool.get('account.move')
+            move_osv = self.pool.get('alternate_ledger.move')
             target_journal_id = move_osv.browse(cr, uid, target_move_id,
                                                 context=context).journal_id.id
 
