@@ -1204,7 +1204,7 @@ class alternate_ledger_move_line(osv.osv):
             writeoff = debit - credit
 
         cr.execute('SELECT account_id, reconcile_id '\
-                   'FROM account_move_line '\
+                   'FROM alternate_ledger_move_line '\
                    'WHERE id IN %s '\
                    'GROUP BY account_id,reconcile_id',
                    (tuple(ids),))
