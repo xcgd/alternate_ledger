@@ -20,5 +20,3 @@ storage/*
 *.db
 .ropeproject/*
 .mob
-
-
