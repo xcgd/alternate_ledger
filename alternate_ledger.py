@@ -206,14 +206,14 @@ class alternate_ledger_move(osv.osv):
             'Status',
             required=True,
             readonly=True,
-            help="""All manually created new journal entries
-                    are usually in the status \'Unposted\',
-                    but you can set the option to skip that
-                    status on the related journal. In that
-                    case, they will behave as journal entries
-                    automatically created by the system on document
-                    validation (invoices, bank statements...)
-                    and will be created in \'Posted\' status."""
+            help="All manually created new journal entries "
+                 "are usually in the status 'Unposted', "
+                 "but you can set the option to skip that "
+                 "status on the related journal. In that "
+                 "case, they will behave as journal entries "
+                 "automatically created by the system on document "
+                 "validation (invoices, bank statements...) "
+                 "and will be created in 'Posted' status."
         ),
         'line_id': fields.one2many(
             'alternate_ledger.move.line',
