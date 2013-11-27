@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+        <!-- Define views related to the account_streamline.ledger_type model. -->
+
         <record id="view_ledger_type_tree" model="ir.ui.view">
             <field name="name">alternate.ledger.ledger.type.tree</field>
-            <field name="model">alternate_ledger.ledger_type</field>
+            <field name="model">account_streamline.ledger_type</field>
             <field name="arch" type="xml">
                 <tree string="Ledger Type" version="7.0" editable="bottom">
                     <field name="name" />
@@ -13,7 +15,7 @@
 
         <record id="view_ledger_type_form" model="ir.ui.view">
             <field name="name">alternate.ledger.ledger.type.form</field>
-            <field name="model">alternate_ledger.ledger_type</field>
+            <field name="model">account_streamline.ledger_type</field>
             <field name="arch" type="xml">
                 <form string="Ledger Type" version="7.0" editable="bottom">
                     <group>
@@ -22,11 +24,12 @@
                 </form>
             </field>
         </record>
-        <!-- Actions -->
+
+        <!-- Define an action to access account_streamline.ledger_type views. -->
 
         <record id="action_ledger_type" model="ir.actions.act_window">
             <field name="name">Ledger Type</field>
-            <field name="res_model">alternate_ledger.ledger_type</field>
+            <field name="res_model">account_streamline.ledger_type</field>
             <field name="type">ir.actions.act_window</field>
             <field name="view_mode">tree,form</field>
             <field name="view_type">form</field>

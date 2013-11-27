@@ -692,8 +692,8 @@ class alternate_ledger_move_line(osv.osv):
             'move_id',
             'ledger_id',
             type='many2one',
-            relation='alternate_ledger.ledger_type',
-            string=_('Ledger Type'),
+            relation='account_streamline.ledger_type',
+            string='Ledger Type',
             store=False,
         ),
 
@@ -1877,7 +1877,7 @@ class alternate_ledger_move_line(osv.osv):
         return result
 
     def list_ledgers(self, cr, uid, context=None):
-        ledger_osv = self.pool.get('alternate_ledger.ledger_type')
+        ledger_osv = self.pool.get('account_streamline.ledger_type')
         ids = ledger_osv.search(cr, uid, [], context=context)
         return ledger_osv.name_get(cr, uid, ids, context=context)
 

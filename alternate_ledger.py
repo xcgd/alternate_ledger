@@ -265,8 +265,8 @@ class alternate_ledger_move(osv.osv):
                     and shouldn't be displayed"""
         ),
         'ledger_id': fields.many2one(
-            'alternate_ledger.ledger_type',
-            _('Ledger Type'),
+            'account_streamline.ledger_type',
+            'Ledger Type',
         ),
     }
 
