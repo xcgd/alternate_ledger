@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Alternate Ledger",
-    "version": "1.0",
+    "version": "1.1",
     "author": "XCG Consulting",
     "category": 'Accounting',
     "description": '''Allow the creation of new accounting ledgers that store
