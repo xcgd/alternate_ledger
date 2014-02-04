@@ -13,10 +13,11 @@
         'account_streamline',
     ],
     "data": [
+        'security/ir.model.access.csv',
         'views/account_view.xml',
         'views/ledger_type.xml',
         'views/menu.xml',
-        'security/ir.model.access.csv',
+        
     ],
     'js': [
         'static/src/js/account_move_line_alternate_quickadd.js',
