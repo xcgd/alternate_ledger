@@ -17,6 +17,7 @@
         'views/account_view.xml',
         'views/ledger_type.xml',
         'views/menu.xml',
+        'views/account_journal.xml',
         
     ],
     'js': [
