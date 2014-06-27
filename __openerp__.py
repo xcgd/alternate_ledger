@@ -11,6 +11,7 @@
     "depends": [
         'base',
         'account_streamline',
+        'analytic_structure',
     ],
     "data": [
         'security/ir.model.access.csv',
