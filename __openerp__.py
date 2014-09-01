@@ -14,11 +14,11 @@
     ],
     "data": [
         'security/ir.model.access.csv',
+        'security/security.xml',
         'views/account_view.xml',
         'views/ledger_type.xml',
         'views/menu.xml',
         'views/account_journal.xml',
-        
     ],
     'js': [
         'static/src/js/account_move_line_alternate_quickadd.js',
