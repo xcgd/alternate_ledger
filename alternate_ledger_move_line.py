@@ -36,6 +36,7 @@ from openerp.osv import fields, osv, orm
 from openerp.tools.translate import _
 import openerp.addons.decimal_precision as dp
 from openerp import tools
+from openerp.addons.analytic_structure.MetaAnalytic import MetaAnalytic
 
 # account_streamline
 # fields that are considered as forbidden once the move_id has been posted
@@ -48,6 +49,7 @@ msg_invalid_journal = _('You cannot move line(s) between journal types')
 
 
 class alternate_ledger_move_line(osv.osv):
+    __metaclass__ = MetaAnalytic
     _name = "alternate_ledger.move.line"
     _description = "Journal Items"
 
@@ -723,27 +725,9 @@ class alternate_ledger_move_line(osv.osv):
                                                20
                                            ),
                                        }),
-        'a1_id': fields.many2one('analytic.code', "Analysis Code 1",
-                              domain=[('nd_id.ns_id.model_name', '=',
-                                       'account_move_line'),
-                                      ('nd_id.ns_id.ordering', '=', '1')]),
-        'a2_id': fields.many2one('analytic.code', "Analysis Code 2",
-                              domain=[('nd_id.ns_id.model_name', '=',
-                                       'account_move_line'),
-                                      ('nd_id.ns_id.ordering', '=', '2')]),
-        'a3_id': fields.many2one('analytic.code', "Analysis Code 3",
-                              domain=[('nd_id.ns_id.model_name', '=',
-                                       'account_move_line'),
-                                      ('nd_id.ns_id.ordering', '=', '3')]),
-        'a4_id': fields.many2one('analytic.code', "Analysis Code 4",
-                              domain=[('nd_id.ns_id.model_name', '=',
-                                       'account_move_line'),
-                                      ('nd_id.ns_id.ordering', '=', '4')]),
-        'a5_id': fields.many2one('analytic.code', "Analysis Code 5",
-                              domain=[('nd_id.ns_id.model_name', '=',
-                                       'account_move_line'),
-                                      ('nd_id.ns_id.ordering', '=', '5')]),
     }
+
+    _analytic = 'account_move_line'
 
     def onchange_ledger_id(self, cr, uid, ids, ledger_id, context=None):
         account_osv = self.pool.get('account.account')
@@ -2008,35 +1992,6 @@ class alternate_ledger_move_line(osv.osv):
             ],
             context
         )
-
-    def fields_get(self, cr, uid, fields=None, context=None):
-        res = super(alternate_ledger_move_line, self).fields_get(
-            cr, uid, fields, context=context
-        )
-        ans_osv = self.pool.get('analytic.structure')
-        res = ans_osv.analytic_fields_get(
-            cr, uid, 'account_move_line', res, context=context
-        )
-        return res
-
-    def fields_view_get(self, cr, uid, view_id=None, view_type='form',
-                        context=None, toolbar=False, submenu=False):
-        '''
-        Display analysis code in account move lines trees
-        '''
-        if context is None:
-            context = {}
-        res = super(alternate_ledger_move_line, self).\
-            fields_view_get(cr, uid, view_id=view_id,
-                            view_type=view_type, context=context,
-                            toolbar=toolbar, submenu=False)
-        ans_obj = self.pool.get('analytic.structure')
-
-        res = ans_obj.analytic_fields_view_get(
-            cr, uid, 'account_move_line', res, context=context
-        )
-
-        return res
 
 alternate_ledger_move_line()
 
