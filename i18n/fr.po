@@ -1,31 +1,40 @@
 # Translation of OpenERP Server.
 # This file contains the translation of the following modules:
-#	* alternate_ledger
+# 	* alternate_ledger
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenERP Server 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-22 12:07+0000\n"
-"PO-Revision-Date: 2013-10-22 12:07+0000\n"
-"Last-Translator: <>\n"
+"POT-Creation-Date: 2014-10-15 13:20+0000\n"
+"PO-Revision-Date: 2014-10-15 15:56+0100\n"
+"Last-Translator: Houzéfa Abbasbhay <houzefa.abba@xcg-consulting.fr>\n"
 "Language-Team: \n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: view:alternate_ledger.move.line:0
 msgid "Reconciliation"
 msgstr "Reconciliation"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1662
+#, python-format
+msgid "Move name (id): %s (%s)"
+msgstr "Nom de la pièce comptable (id) : %s (%s)"
+
+#. module: alternate_ledger
 #: help:alternate_ledger.move.line,amount_residual:0
-msgid "The residual amount on a receivable or payable of\n"
+msgid ""
+"The residual amount on a receivable or payable of\n"
 "                    a journal entry expressed in the company currency."
-msgstr "Le montant residuel d'un montant sur une créance ou à payer pour une entrée de journal exprimée dans la devis de l'entreprise."
+msgstr ""
+"Le montant residuel d'un montant sur une créance ou à payer pour une entrée "
+"de journal exprimée dans la devis de l'entreprise."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,centralisation:0
@@ -33,20 +42,59 @@ msgid "Centralisation"
 msgstr "Centralisation"
 
 #. module: alternate_ledger
-#: field:alternate_ledger.move.line,statement_id:0
-msgid "Statement"
-msgstr "Déclaration"
+#: help:alternate_ledger.move.line,currency_id:0
+msgid "The mandatory currency code"
+msgstr "Le code de la devise obligatoire"
 
 #. module: alternate_ledger
-#: help:alternate_ledger.move.line,move_id:0
-msgid "The move of this entry line."
-msgstr "Le mouvement d'une écriture comptable."
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1701
+#, python-format
+msgid "No period found or more than one period found for the given date."
+msgstr "Aucune période trouvée ou plus d'une période trouvée pour cette date"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,tax_code_id:0
+msgid "Tax Account"
+msgstr "Compte de taxes"
 
 #. module: alternate_ledger
 #: help:alternate_ledger.move.line,amount_currency:0
-msgid "The amount expressed in an optional other\n"
+msgid ""
+"The amount expressed in an optional other\n"
 "                    currency if it is a multi-currency entry."
-msgstr "Le montant exprimé dans une autre devise optionnelle s'il s'agit d'une entrée multi-devises."
+msgstr ""
+"Le montant exprimé dans une autre devise optionnelle s'il s'agit d'une "
+"entrée multi-devises."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:594
+#, python-format
+msgid ""
+"There is no default debit account defined\n"
+"on journal \"%s\"."
+msgstr ""
+"Il n'y a pas de compte de débit par défaut définit\n"
+"pour le journal \"%s\"."
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid ""
+"The selected account of your Journal Entry forces to provide a secondary "
+"currency. You should remove the secondary currency on the account or select "
+"a multi-currency view on the journal."
+msgstr ""
+"Le compte choisi dans les pièces comptables oblige à fournir une seconde "
+"devise. Vous devez supprimer la devise secondaire sur le compte ou "
+"sélectionnez une vue multi-devises sur la pièce"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1070
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1134
+#, python-format
+msgid "To reconcile the entries company should be the same for all entries."
+msgstr ""
+"Pour réconcilier, la compagnie des écritures doit être la même pour toute "
+"les entrées"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move,company_id:0
@@ -55,18 +103,23 @@ msgid "Company"
 msgstr "Société"
 
 #. module: alternate_ledger
-#: help:alternate_ledger.move,state:0
-msgid "All manually created new journal entries\n"
-"                    are usually in the status 'Unposted', \n"
-"                    but you can set the option to skip that \n"
-"                    status on the related journal. In that \n"
-"                    case, they will behave as journal entries \n"
-"                    automatically created by the system on document \n"
-"                    validation (invoices, bank statements...) \n"
-"                    and will be created in 'Posted' status."
-msgstr "Toutes les nouvelles pièces comptables créées manuellement sont généralement dans le statut «non affichée», 
-mais vous pouvez configurer l'option de sauter ce statut à la revue correspondante. 
-Dans ce cas, ils se comporteront comme les pièces comptables créées automatiquement par le système de validation de documents (factures, relevés bancaires ...) et seront créés dans le statut «Publié».."
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1730
+#, python-format
+msgid ""
+"Cannot create an automatic sequence for this piece.\n"
+"Put a sequence in the journal definition for automatic numbering or create a "
+"sequence manually for this piece."
+msgstr ""
+"Impossible de créer une séquence automatique pour cette pièce.\n"
+"Indiquer une séquence dans les paramètres du journal  pour un comptage "
+"automatique ou créer une séquence manuellement pour cette pièce. "
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:770
+#, python-format
+msgid "Cannot create move with currency different from .."
+msgstr ""
+"Impossible de créer une pièce comptable avec une devise différente de .."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move,line_id:0
@@ -79,13 +132,7 @@ msgid "Debit Centralisation"
 msgstr "Debit Centralisation"
 
 #. module: alternate_ledger
-#: field:account.balance.report,no_opening:0
-msgid "No Opening"
-msgstr "Pas d'ouverture"
-
-#. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: view:alternate_ledger.move.line:0
+#: view:alternate_ledger.move:0 view:alternate_ledger.move.line:0
 msgid "Total Credit"
 msgstr "Total Credit"
 
@@ -96,30 +143,54 @@ msgid "Account"
 msgstr "Compte"
 
 #. module: alternate_ledger
-#: help:alternate_ledger.move,to_check:0
-msgid "Check this box if you are unsure of that \n"
-"                    journal entry and if you want to note it \n"
-"                    as 'to be reviewed' by an accounting expert."
-msgstr "Cochez cette case si vous n'êtes pas sûr(e) de cette écriture comptable et si vous voulez le noter comme 'A revoir' par un expert comptable."
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1542
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1688
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1755
+#, python-format
+msgid "Bad Account!"
+msgstr "Mauvais compte !"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: view:alternate_ledger.move.line:0
-msgid "Taxes"
-msgstr "Taxes"
+msgid "Journal Item"
+msgstr "Ecritures"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: view:alternate_ledger.move.line:0
+#: view:alternate_ledger.move:0 view:alternate_ledger.move.line:0
 msgid "Total Debit"
 msgstr "Total Debit"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: field:alternate_ledger.move,amount:0
+#: code:addons/alternate_ledger/alternate_ledger.py:310
+#: code:addons/alternate_ledger/alternate_ledger.py:333
+#: code:addons/alternate_ledger/alternate_ledger.py:398
+#: code:addons/alternate_ledger/alternate_ledger.py:422
+#: code:addons/alternate_ledger/alternate_ledger.py:433
+#: code:addons/alternate_ledger/alternate_ledger.py:755
+#: code:addons/alternate_ledger/alternate_ledger.py:769
+#: code:addons/alternate_ledger/alternate_ledger.py:897
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:844
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1142
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1149
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1154
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1198
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1200
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1620
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1627
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1633
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1650
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1664
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1666
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1701
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1846
+#, python-format
+msgid "Error!"
+msgstr "Erreur !"
+
+#. module: alternate_ledger
 #: view:alternate_ledger.move.line:0
-msgid "Amount"
-msgstr "Montant"
+msgid "Analytic Static"
+msgstr "Analytique statique"
 
 #. module: alternate_ledger
 #: sql_constraint:alternate_ledger.move.line:0
@@ -128,13 +199,31 @@ msgstr "Mauvaise valeur credit ou debit en écriture comptable !"
 
 #. module: alternate_ledger
 #: constraint:alternate_ledger.move.line:0
-msgid "The amount expressed in the secondary currency must be positive when the journal item is a debit and negative when if it is a credit."
-msgstr "Le montant exprimé dans la monnaie secondaire doit être positif lorsque l'écriture comptable est un débit et négatif quand s'il s'agit d'un crédit."
+msgid ""
+"The amount expressed in the secondary currency must be positive when the "
+"journal item is a debit and negative when if it is a credit."
+msgstr ""
+"Le montant exprimé dans la monnaie secondaire doit être positif lorsque "
+"l'écriture comptable est un débit et négatif quand s'il s'agit d'un crédit."
 
 #. module: alternate_ledger
 #: constraint:alternate_ledger.move:0
-msgid "You cannot create more than one move per period on a centralized journal."
-msgstr "Vous ne pouvez pas créer plus d'un mouvement par période sur une revue centralisée."
+msgid ""
+"You cannot create more than one move per period on a centralized journal."
+msgstr ""
+"Vous ne pouvez pas créer plus d'un mouvement par période sur une revue "
+"centralisée."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1377
+#, python-format
+msgid "Entries: "
+msgstr "Écritures :"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,currency_rate:0
+msgid "Used rate"
+msgstr "Taux utilisé"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,reconcile_id:0
@@ -142,15 +231,22 @@ msgid "Reconcile"
 msgstr "Reconcilier"
 
 #. module: alternate_ledger
-#: field:alternate_ledger.move,ref:0
-#: field:alternate_ledger.move.line,ref:0
+#: field:alternate_ledger.move,ref:0 field:alternate_ledger.move.line,ref:0
 msgid "Reference"
 msgstr "Reference"
 
 #. module: alternate_ledger
-#: constraint:alternate_ledger.move.line:0
-msgid "You cannot provide a secondary currency if it is the same than the company one."
-msgstr "Vous ne pouvez pas fournir une monnaie secondaire si elle est la même que l'entreprise."
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:801
+#, python-format
+msgid ""
+"Cannot find any account journal of %s type for this company.\n"
+"\n"
+"You can create one in the menu: \n"
+"Configuration/Journals/Journals."
+msgstr ""
+"Impossible de trouver le compte du type %s  pour cette société.\n"
+"\n"
+"  "
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,account_tax_id:0
@@ -158,9 +254,60 @@ msgid "Tax"
 msgstr "Taxe"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1540
+#, python-format
+msgid "Unable to change tax!"
+msgstr "Impossible de modifier la taxe"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,analytic_account_id:0
+msgid "Analytic Account"
+msgstr "Compte Analytique"
+
+#. module: alternate_ledger
 #: constraint:alternate_ledger.move.line:0
-msgid "The date of your Journal Entry is not in the defined period! You should change the date or remove this constraint from the journal."
-msgstr "La date des pièces comptables n'est pas dans la période définie! Vous devez changer la date ou supprimer cette contrainte des pièces.."
+msgid ""
+"You cannot provide a secondary currency if it is the same than the company "
+"one."
+msgstr ""
+"Vous ne pouvez pas fournir une monnaie secondaire si elle est la même que "
+"l'entreprise."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:128
+#, python-format
+msgid ""
+"You have not supplied enough arguments to compute the initial balance, "
+"please select a period and a journal in the context."
+msgstr ""
+"Vous n'avez pas saisie assez d'informations pour extraire la balance, merci "
+"de sélectionner une période et un journal."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1079
+#, python-format
+msgid "Warning"
+msgstr "Attention"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,a1_id:0
+#: field:alternate_ledger.move.line,a2_id:0
+#: field:alternate_ledger.move.line,a3_id:0
+#: field:alternate_ledger.move.line,a4_id:0
+#: field:alternate_ledger.move.line,a5_id:0
+msgid "Generated Analytic Field"
+msgstr "Champ Analytique Généré"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1143
+#, python-format
+msgid "Entry \"%s\" is not valid !"
+msgstr "La saisie \"%s\" n'est pas valide !"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,credit_curr:0
+msgid "This is the credit amount in transaction currency"
+msgstr "Montant créditeur en devise de transaction"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move,partner_id:0
@@ -174,9 +321,39 @@ msgid "Journal Entry"
 msgstr "Pièces comptables"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:434
+#, python-format
+msgid ""
+"You cannot modify a posted entry of this journal.\n"
+"First you should set the journal to allow cancelling entries."
+msgstr ""
+"Vous ne pouvez pas modifier une transaction postée de ce journal.\n"
+"Vous devez paramétrer le journal de façon à autoriser la suppression des "
+"écritures."
+
+#. module: alternate_ledger
 #: field:alternate_ledger.move.line,blocked:0
 msgid "No Follow-up"
 msgstr "Pas de suivi"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:48
+#, python-format
+msgid "You cannot move line(s) between journal types"
+msgstr ""
+"Vous ne pouvez pas déplacer des lignes entre différents types de journaux"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,date_reconcile:0
+msgid "Reconcile Date"
+msgstr "Date de réconciliation"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:393
+#, python-format
+msgid "Unable to post! The following analysis codes are mandatory:"
+msgstr ""
+"Impossible de poster! Les  codes analytiques suivants sont obligatoires:"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move,period_id:0
@@ -185,23 +362,39 @@ msgid "Period"
 msgstr "Période"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-msgid "Journal Entries"
-msgstr "Pièces comptables"
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:45
+#, python-format
+msgid "You cannot add line(s) into an already posted entry"
+msgstr ""
+"Vous ne pouvez pas ajouter des lignes de transaction dans un journal déjà "
+"posté"
 
 #. module: alternate_ledger
 #: help:alternate_ledger.move.line,quantity:0
-msgid "The optional quantity expressed by this line, eg:\n"
+msgid ""
+"The optional quantity expressed by this line, eg:\n"
 "                    number of product sold. The quantity is not a legal\n"
 "                    requirement but is very useful for some reports."
-msgstr "La quantité optionnelle exprimée par cette ligne, eg:\n"
-"                    nombre de produit vendu.La quantité n'est pas une obligation legale\n"
+msgstr ""
+"La quantité optionnelle exprimée par cette ligne, eg:\n"
+"                    nombre de produit vendu.La quantité n'est pas une "
+"obligation legale\n"
 "                    mais est très utile pour certains rapports."
+
+#. module: alternate_ledger
+#: field:account.journal,version_number:0
+msgid "Version"
+msgstr "Version"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,debit:0
 msgid "Debit"
 msgstr "Débit"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move,balance:0
+msgid "balance"
+msgstr "balance"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.reconcile,type:0
@@ -214,14 +407,56 @@ msgid "Cancel Entry"
 msgstr "Annuler la pièce"
 
 #. module: alternate_ledger
-#: field:alternate_ledger.move.line,analytic_account_id:0
-msgid "Analytic Account"
-msgstr "Compte Analytique"
+#: constraint:alternate_ledger.move.line:0
+msgid ""
+"The date of your Journal Entry is not in the defined period! You should "
+"change the date or remove this constraint from the journal."
+msgstr ""
+"La date des pièces comptables n'est pas dans la période définie! Vous devez "
+"changer la date ou supprimer cette contrainte des pièces.."
 
 #. module: alternate_ledger
-#: field:alternate_ledger.move.line,tax_code_id:0
-msgid "Tax Account"
-msgstr "Compte de taxes"
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1650
+#, python-format
+msgid "You can not add/modify entries in a closed period %s of journal %s."
+msgstr ""
+"Vous ne pouvez pas ajouter/modifier des transactions sur la période fermée "
+"%s du journal %s."
+
+#. module: alternate_ledger
+#: constraint:alternate_ledger.move.line:0
+msgid "You cannot create journal items on an account of type view."
+msgstr ""
+"Vous ne pouvez pas créer d'écritures comptables sur un compte de type vue."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move,state:0
+#, fuzzy
+msgid ""
+"All manually created new journal entries are usually in the status "
+"'Unposted', but you can set the option to skip that status on the related "
+"journal. In that case, they will behave as journal entries automatically "
+"created by the system on document validation (invoices, bank statements...) "
+"and will be created in 'Posted' status."
+msgstr ""
+"Toutes les nouvelles pièces comptables créées manuellement sont généralement "
+"dans le statut «non affichée»"
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,move_id:0
+msgid "The move of this entry line."
+msgstr "Le mouvement d'une écriture comptable."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:756
+#, python-format
+msgid "Cannot create moves for different companies."
+msgstr "Impossible de créer des pièces comptables pour différentes sociétés."
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,credit_curr:0
+msgid "Credit T"
+msgstr "Crédit T"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,product_uom_id:0
@@ -229,23 +464,71 @@ msgid "Unit of Measure"
 msgstr "Unité de mesure"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1198
+#, python-format
+msgid "Entry is already reconciled."
+msgstr "La transaction est déjà lettrée."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:898
+#, python-format
+msgid ""
+"You cannot unreconcile journal items if they has been generated by the "
+"opening/closing fiscal year process."
+msgstr ""
+"Vous ne pouvez pas délettrer les transactions d'un journal si elles ont été "
+"générées par la procédure d'ouverture/clôture d'exercice fiscal."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1150
+#, python-format
+msgid ""
+"All entries must have the same second currency! Reconcile on company "
+"currency otherwise."
+msgstr ""
+"Toutes les transactions doivent avoir la même devise de transaction! Faite "
+"un lettrage en montant de base le cas échéant."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:801
+#, python-format
+msgid "Configuration Error!"
+msgstr "Erreur de Configuration!"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:46
+#, python-format
+msgid "You cannot remove line(s) from an already posted entry"
+msgstr "Vous ne pouvez pas supprimer des lignes dans un journal déjà posté"
+
+#. module: alternate_ledger
 #: view:alternate_ledger.move.line:0
 msgid "Dates"
 msgstr "Dates"
 
 #. module: alternate_ledger
-#: help:alternate_ledger.move.line,date_maturity:0
-msgid "This field is used for payable and receivable journal entries.\n"
-"                    You can put the limit date for the payment of this line."
-msgstr "Ce champs est utilisé pour les pièces comptables débitrices et créditrices .\n"
-"                    Vous pouvez mettre la date limite pour le paiement de cette écriture."
+#. openerp-web
+#: code:addons/alternate_ledger/static/src/xml/account_move_line_alternate_quickadd.xml:20
+#, python-format
+msgid "Journal :"
+msgstr "Journal :"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: view:alternate_ledger.move.line:0
-msgid "Accounting Documents"
-msgstr "Documents comptables"
+#: help:alternate_ledger.move.line,date_maturity:0
+msgid ""
+"This field is used for payable and receivable journal entries.\n"
+"                    You can put the limit date for the payment of this line."
+msgstr ""
+"Ce champs est utilisé pour les pièces comptables débitrices et "
+"créditrices .\n"
+"                    Vous pouvez mettre la date limite pour le paiement de "
+"cette écriture."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1730
+#, python-format
+msgid "No Piece Number!"
+msgstr "Aucun Numéro de Pièce!"
 
 #. module: alternate_ledger
 #: constraint:alternate_ledger.move.line:0
@@ -255,7 +538,8 @@ msgstr "Compte et période doivent appartenir à la même entreprise."
 #. module: alternate_ledger
 #: help:alternate_ledger.move.reconcile,opening_reconciliation:0
 msgid "Is this reconciliation produced by the opening of a new fiscal year ?."
-msgstr "Est-ce la réconciliation produite par l'ouverture d'un nouvel exercice ?."
+msgstr ""
+"Est-ce la réconciliation produite par l'ouverture d'un nouvel exercice ?."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,date_maturity:0
@@ -268,12 +552,22 @@ msgid "To Review"
 msgstr "A verifier"
 
 #. module: alternate_ledger
-#: constraint:alternate_ledger.move.line:0
-msgid "The selected account of your Journal Entry forces to provide a secondary currency. You should remove the secondary currency on the account or select a multi-currency view on the journal."
-msgstr "Le compte choisi dans les pièces comptables oblige à fournir une seconde devise. Vous devez supprimer la devise secondaire sur le compte ou sélectionnez une vue multi-devises sur la pièce"
+#: code:addons/alternate_ledger/alternate_ledger.py:628
+#, python-format
+msgid " Centralisation"
+msgstr "Centralisation"
 
 #. module: alternate_ledger
 #: view:alternate_ledger.move:0
+msgid "Journal Entries"
+msgstr "Pièces comptables"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,debit_curr:0
+msgid "Debit T"
+msgstr "Débit T"
+
+#. module: alternate_ledger
 #: view:alternate_ledger.move.line:0
 #: field:alternate_ledger.move.line,currency_id:0
 msgid "Currency"
@@ -281,20 +575,25 @@ msgstr "Devise"
 
 #. module: alternate_ledger
 #: help:alternate_ledger.move.line,tax_code_id:0
-msgid "The Account can either be a base tax\n"
+msgid ""
+"The Account can either be a base tax\n"
 "                    code or a tax code account."
-msgstr "Le compte peut être soit un code taxe de base\n"
+msgstr ""
+"Le compte peut être soit un code taxe de base\n"
 "                    ou un code de taxe de compte."
 
 #. module: alternate_ledger
-#: help:alternate_ledger.move.line,currency_id:0
-msgid "The optional other currency if it is a multi-currency entry."
-msgstr "L'autre devise facultative si c'est une pièce multi-devises."
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1079
+#, python-format
+msgid "Journal Item '%s' (id: %s), Move '%s' is already reconciled!"
+msgstr ""
+"Ecriture comptable '%s' (id: %s), Pièce comptable '%s' est déjà lettrée!"
 
 #. module: alternate_ledger
-#: model:ir.model,name:alternate_ledger.model_alternate_ledger_ledger_type
-msgid "alternate_ledger.ledger_type"
-msgstr "alternate_ledger.ledger_type"
+#: code:addons/alternate_ledger/alternate_ledger.py:550
+#, fuzzy, python-format
+msgid "You cannot delete a posted journal entry \"%s\"."
+msgstr "Vous ne pouvez pas créer d'écriture comptable sur un compte fermé."
 
 #. module: alternate_ledger
 #: constraint:alternate_ledger.move.line:0
@@ -308,17 +607,49 @@ msgid "Journal Items Ledger"
 msgstr "Ecritures comptables annexes"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:225
+#, python-format
+msgid "You have to define an analytic journal on the '%s' journal!"
+msgstr "Vous devez définir l'analytique dans le journal '%s'!"
+
+#. module: alternate_ledger
 #: model:ir.model,name:alternate_ledger.model_alternate_ledger_move_reconcile
 msgid "Account Reconciliation"
 msgstr "Lettrage de compte"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1666
+#, python-format
+msgid ""
+"You cannot do this modification on a reconciled entry. You can just change "
+"some non legal fields or you must unreconcile first.\n"
+"%s."
+msgstr ""
+"Vous ne pouvez pas faire de modifications sur les transactions lettrées. "
+"Vous pouvez juste changer des champs non légaux ou vous devez délettrer "
+"avant.\n"
+"%s."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move,to_check:0
+#, fuzzy
+msgid ""
+"Check this box if you are unsure of that\n"
+"                    journal entry and if you want to note it\n"
+"                    as 'to be reviewed' by an accounting expert."
+msgstr ""
+"Cochez cette case si vous n'êtes pas sûr(e) de cette écriture comptable et "
+"si vous voulez le noter comme 'A revoir' par un expert comptable."
+
+#. module: alternate_ledger
 #: help:alternate_ledger.move.line,tax_amount:0
-msgid "If the Tax account is a tax code account, this field\n"
+msgid ""
+"If the Tax account is a tax code account, this field\n"
 "                    will contain the taxed amount.If the tax account is \n"
 "                    base tax code, this field will contain the basic \n"
 "                    amount(without tax)."
-msgstr "Si le compte de taxes est un compte du code des impôts, ce champ \n"
+msgstr ""
+"Si le compte de taxes est un compte du code des impôts, ce champ \n"
 "                    contient le montant taxé. Si le compte de taxes est \n"
 "                   un code taxe de base, ce champ contient le montant  \n"
 "                    de base(sans taxes)."
@@ -345,8 +676,7 @@ msgid "Status"
 msgstr "Statut"
 
 #. module: alternate_ledger
-#: field:account.balance.report,ledger_id:0
-#: view:alternate_ledger.ledger_type:0
+#: view:account_streamline.ledger_type:0
 #: field:alternate_ledger.move,ledger_id:0
 #: field:alternate_ledger.move.line,ledger_id:0
 #: model:ir.actions.act_window,name:alternate_ledger.action_ledger_type
@@ -355,10 +685,18 @@ msgid "Ledger Type"
 msgstr "Livre annexe"
 
 #. module: alternate_ledger
+#: field:alternate_ledger.move,amount:0 view:alternate_ledger.move.line:0
+msgid "Amount"
+msgstr "Montant"
+
+#. module: alternate_ledger
 #: help:alternate_ledger.move.line,blocked:0
-msgid "You can check this box to mark this journal\n"
+msgid ""
+"You can check this box to mark this journal\n"
 "                    item as a litigation with the associated partner"
-msgstr "Vous pouvez cocher cette case pour marquer cette écriture comptable comme un litige avec le partenaire associé"
+msgstr ""
+"Vous pouvez cocher cette case pour marquer cette écriture comptable comme un "
+"litige avec le partenaire associé"
 
 #. module: alternate_ledger
 #: selection:alternate_ledger.move.line,centralisation:0
@@ -382,10 +720,12 @@ msgstr "Date"
 
 #. module: alternate_ledger
 #: help:alternate_ledger.move,balance:0
-msgid "This is a field only used for internal purpose\n"
+msgid ""
+"This is a field only used for internal purpose\n"
 "                    and shouldn't be displayed"
-msgstr C'est un champ uniquement utilisé pour objectif interne'\n"
-"                    et ne devrait pas être affiché"
+msgstr ""
+"Ce champ est utilisé seulement à but interne\n"
+"                et ne doit pas être affiché"
 
 #. module: alternate_ledger
 #: view:alternate_ledger.move:0
@@ -393,17 +733,89 @@ msgid "Post"
 msgstr "Poster"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: field:alternate_ledger.move,narration:0
 #: field:alternate_ledger.move.line,narration:0
 msgid "Internal Note"
 msgstr "Note interne"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1664
+#, python-format
+msgid ""
+"You cannot do this modification on a confirmed entry. You can just change "
+"some non legal fields or you must unconfirm the journal entry first.\n"
+"%s."
+msgstr ""
+"Vous ne pouvez pas exécuter cette modification sur des transactions "
+"validées. Vous pouvez juste changer des champs non légaux ou vous devez "
+"annuler les transactions de ce journal avant.\n"
+"%s."
+
+#. module: alternate_ledger
 #: field:alternate_ledger.move.line,date_created:0
 #: field:alternate_ledger.move.reconcile,create_date:0
 msgid "Creation date"
 msgstr "Creation de date"
+
+#. module: alternate_ledger
+#: field:alternate_ledger.move.line,statement_id:0
+msgid "Statement"
+msgstr "Déclaration"
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,help:alternate_ledger.action_move_alternate
+#, fuzzy
+msgid ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create a journal entry.\n"
+"                </p>\n"
+"                <p>\n"
+"                    A journal entry consists of several journal items, each "
+"of\n"
+"                    which is either a debit or a credit transaction.\n"
+"                </p>\n"
+"                <p>\n"
+"                    OpenERP automatically creates one journal entry per\n"
+"                    accounting\n"
+"                    document: invoice, refund, supplier payment, bank\n"
+"                    statements,\n"
+"                    etc. So, you should record journal entries\n"
+"                    manually only/mainly\n"
+"                    for miscellaneous operations.\n"
+"                </p>\n"
+"            "
+msgstr ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create a journal entry.\n"
+"                </p><p>\n"
+"                    A journal entry consists of several journal items, each "
+"of\n"
+"                    which is either a debit or a credit transaction.\n"
+"                </p><p>\n"
+"                    OpenERP automatically creates one journal entry per "
+"accounting\n"
+"                    document: invoice, refund, supplier payment, bank "
+"statements,\n"
+"                    etc. So, you should record journal entries manually only/"
+"mainly\n"
+"                    for miscellaneous operations.\n"
+"                </p>\n"
+"            "
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:602
+#, python-format
+msgid ""
+"There is no default credit account defined\n"
+"on journal \"%s\"."
+msgstr ""
+"Aucun compte créditeur par défaut n'est défini\n"
+"dans le journal \"%s\"."
+
+#. module: alternate_ledger
+#: help:alternate_ledger.move.line,debit_curr:0
+msgid "This is the debit amount in transaction currency"
+msgstr "Montant débiteur en devise de transaction"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,credit:0
@@ -417,11 +829,13 @@ msgstr "Montant de devise"
 
 #. module: alternate_ledger
 #: help:alternate_ledger.move.line,amount_residual_currency:0
-msgid "The residual amount on a receivable or payable of a\n"
+msgid ""
+"The residual amount on a receivable or payable of a\n"
 "                    journal entry expressed in its currency (maybe\n"
 "                    different of the company currency)."
-msgstr "Le montant résiduel sur un débit ou crédit d'une écriture comptable exprimée dans sa devise (Peut être différent de la devise de l'entreprise.")
-                    
+msgstr ""
+"Le montant résiduel sur un débit ou crédit d'une écriture comptable exprimée "
+"dans sa devise (Peut être différent de la devise de l'entreprise."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,balance:0
@@ -430,8 +844,12 @@ msgstr "Balance"
 
 #. module: alternate_ledger
 #: constraint:alternate_ledger.move.line:0
-msgid "You cannot create journal items with a secondary currency without recording both 'currency' and 'amount currency' field."
-msgstr Vous ne pouvez pas créer d'écritures comptables avec une monnaie secondaire sans enregistrer à la fois le champ 'devise' et le champ 'montant' de la devise.
+msgid ""
+"You cannot create journal items with a secondary currency without recording "
+"both 'currency' and 'amount currency' field."
+msgstr ""
+"Vous ne pouvez pas utiliser une seconde devise sur les transactions d'un "
+"journal sans renseigner les champs 'devise' et 'montant en transaction'."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,quantity:0
@@ -446,7 +864,7 @@ msgstr "Opening Entries Reconciliation"
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,amount_residual:0
 msgid "Residual Amount"
-msgstr Montant résiduel"
+msgstr "Montant résiduel"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,analytic_lines:0
@@ -454,9 +872,15 @@ msgid "Analytic lines"
 msgstr "Lignes analytiques"
 
 #. module: alternate_ledger
+#: view:alternate_ledger.move.line:0
+msgid "Analytic"
+msgstr "Analytic"
+
+#. module: alternate_ledger
 #: constraint:alternate_ledger.move.reconcile:0
 msgid "You can only reconcile journal items with the same partner."
-msgstr "Vous ne pouvez concilier des écritures comptables avec le même partenaire."
+msgstr ""
+"Vous ne pouvez concilier des écritures comptables avec le même partenaire."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move,name:0
@@ -474,87 +898,71 @@ msgid "Balanced"
 msgstr "Equilibré"
 
 #. module: alternate_ledger
-#: model:ir.actions.act_window,help:alternate_ledger.action_move_line_alternate
-msgid "<p class=\"oe_view_nocontent_create\">\n"
-"                    Select the period and the journal you want to fill.\n"
-"                </p><p>\n"
-"                    This view can be used by accountants in order to quickly record\n"
-"                    entries in OpenERP. If you want to record a supplier invoice,\n"
-"                    start by recording the line of the expense account. OpenERP\n"
-"                    will propose to you automatically the Tax related to this\n"
-"                    account and the counterpart \"Account Payable\".\n"
-"                </p>\n"
-"            "
-msgstr "<p class=\"oe_view_nocontent_create\">\n"
-"                    Selectionner la période et le journal que vous voulez remplir.\n"
-"                </p><p>\n"
-"                    Cette vue peut être utilisée par les comptables pour enregistrer rapidement\n"
-"                    des écritures dans OpenERP. Si vous souhaitez enregistrer une facture fournisseur,\n"
-"                   "commencer par l'enregistrement de la ligne du compte de dépenses. OpenERP\n"
-"                   vous proposera automatiquement la taxe liée à ce compte  \n"
-"                    et sa contrepartie \"Compte à payer\".\n"
-"                </p>\n"
-"            "
-
-#. module: alternate_ledger
-#: field:alternate_ledger.move,balance:0
-msgid "balance"
-msgstr "balance"
-
-#. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: view:alternate_ledger.move.line:0
+msgid "Accounting Documents"
+msgstr "Documents comptables"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:311
+#, python-format
+msgid ""
+"You cannot validate a non-balanced entry.\n"
+"Make sure you have configured payment terms properly.\n"
+"The latest payment term line should be of the \"Balance\" type."
+msgstr ""
+"Vous ne pouvez pas valider une écriture non équilibrée.\n"
+"Vérifiez que vous avez configuré correctement les conditions de règlements.\n"
+" "
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1229
+#, python-format
+msgid "Exchange difference"
+msgstr "Ecart de change"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0 view:alternate_ledger.move.line:0
 #: model:ir.model,name:alternate_ledger.model_alternate_ledger_move_line
 msgid "Journal Items"
 msgstr "Ecritures Journaux"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: view:alternate_ledger.move.line:0
 msgid "Information"
 msgstr "Information"
 
 #. module: alternate_ledger
-#: model:ir.actions.act_window,help:alternate_ledger.action_move_alternate
-msgid "<p class=\"oe_view_nocontent_create\">\n"
-"                    Click to create a journal entry.\n"
-"                </p><p>\n"
-"                    A journal entry consists of several journal items, each of\n"
-"                    which is either a debit or a credit transaction.\n"
-"                </p><p>\n"
-"                    OpenERP automatically creates one journal entry per accounting\n"
-"                    document: invoice, refund, supplier payment, bank statements,\n"
-"                    etc. So, you should record journal entries manually only/mainly\n"
-"                    for miscellaneous operations.\n"
-"                </p>\n"
-"            "
-msgstr "<p class=\"oe_view_nocontent_create\">\n"
-"                    Click to create a journal entry.\n"
-"                </p><p>\n"
-"                    A journal entry consists of several journal items, each of\n"
-"                    which is either a debit or a credit transaction.\n"
-"                </p><p>\n"
-"                    OpenERP automatically creates one journal entry per accounting\n"
-"                    document: invoice, refund, supplier payment, bank statements,\n"
-"                    etc. So, you should record journal entries manually only/mainly\n"
-"                    for miscellaneous operations.\n"
-"                </p>\n"
-"            "
+#: code:addons/alternate_ledger/alternate_ledger.py:423
+#, python-format
+msgid ""
+"You cannot validate this journal entry because account \"%s\" does not "
+"belong to chart of accounts \"%s\"."
+msgstr ""
+"Vous ne pouvez pas valider ce journal car le compte \"%s\" n'est pas présent "
+"dans le plan comptable \"%s\". "
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: view:alternate_ledger.move.line:0
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1293
+#, python-format
+msgid "Write-Off"
+msgstr "Perte"
+
+#. module: alternate_ledger
+#: view:alternate_ledger.move:0 view:alternate_ledger.move.line:0
 msgid "Add an internal note..."
 msgstr "Ajoutez une note..."
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
-#: view:alternate_ledger.move.line:0
-msgid "Analytic"
-msgstr "Analytic"
+#. openerp-web
+#: code:addons/alternate_ledger/static/src/xml/account_move_line_alternate_quickadd.xml:14
+#, python-format
+msgid "Period :"
+msgstr "Période :"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:706
 #: selection:alternate_ledger.move.line,centralisation:0
+#, python-format
 msgid "Currency Adjustment"
 msgstr "Ecarts de change"
 
@@ -564,15 +972,41 @@ msgid "Tax/Base Amount"
 msgstr "Montant"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:844
+#, fuzzy, python-format
+msgid "You cannot create journal items on a closed account %s %s."
+msgstr "Vous ne pouvez pas créer d'écriture comptable sur un compte fermé."
+
+#. module: alternate_ledger
 #: field:alternate_ledger.move.line,product_id:0
 msgid "Product"
 msgstr "Produit"
 
 #. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:225
+#, fuzzy, python-format
+msgid "No Analytic Journal!"
+msgstr "Compte Analytique"
+
+#. module: alternate_ledger
 #: field:alternate_ledger.move,journal_id:0
 #: field:alternate_ledger.move.line,journal_id:0
+#: model:ir.model,name:alternate_ledger.model_account_journal
 msgid "Journal"
 msgstr "Journal"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1200
+#, python-format
+msgid "Some entries are already reconciled."
+msgstr "Certaines transactions sont déjà lettrées."
+
+#. module: alternate_ledger
+#. openerp-web
+#: code:addons/alternate_ledger/static/src/xml/account_move_line_alternate_quickadd.xml:8
+#, fuzzy, python-format
+msgid "Ledger :"
+msgstr "Livre annexe"
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,amount_residual_currency:0
@@ -591,27 +1025,80 @@ msgid "Posted"
 msgstr "Posté"
 
 #. module: alternate_ledger
+#: field:alternate_ledger.move.line,move_state:0
+#, fuzzy
+msgid "status"
+msgstr "Statut"
+
+#. module: alternate_ledger
 #: field:account.account,ledger_types:0
 msgid "Ledger Types"
 msgstr "Livres annexe"
 
 #. module: alternate_ledger
-#: field:alternate_ledger.ledger_type,name:0
 #: field:alternate_ledger.move.line,name:0
 #: field:alternate_ledger.move.reconcile,name:0
 msgid "Name"
 msgstr "Nom"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
 #: view:alternate_ledger.move.line:0
 msgid "Analytic Lines"
 msgstr "Ecritures Analytiques"
 
 #. module: alternate_ledger
-#: constraint:alternate_ledger.move.line:0
-msgid "You cannot create journal items on an account of type view."
-msgstr "Vous ne pouvez pas créer d'écritures comptables sur un compte de type vue."
+#: code:addons/alternate_ledger/alternate_ledger.py:557
+#, python-format
+msgid ""
+"Move cannot be deleted if linked to an invoice. (Invoice: %s - Move ID:%s)"
+msgstr ""
+"Une pièce comptable ne peut être effacée si elle est liée à une facture. "
+"(Facture: %s - Pièce comptable ID:%s)"
+
+#. module: alternate_ledger
+#: model:ir.actions.act_window,help:alternate_ledger.action_move_line_alternate
+#, fuzzy
+msgid ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"                    Select the period and the journal you want to fill.\n"
+"                </p>\n"
+"                <p>\n"
+"                    This view can be used by accountants in order to "
+"quickly\n"
+"                    record\n"
+"                    entries in OpenERP. If you want to record a supplier\n"
+"                    invoice,\n"
+"                    start by recording the line of the expense account.\n"
+"                    OpenERP\n"
+"                    will propose to you automatically the Tax related to\n"
+"                    this\n"
+"                    account and the counterpart \"Account Payable\".\n"
+"                </p>\n"
+"            "
+msgstr ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"                    Selectionner la période et le journal que vous voulez "
+"remplir.\n"
+"                </p><p>\n"
+"                    Cette vue peut être utilisée par les comptables pour "
+"enregistrer rapidement\n"
+"                    des écritures dans OpenERP. Si vous souhaitez "
+"enregistrer une facture fournisseur,\n"
+"                   commencer par l'enregistrement de la ligne du compte de "
+"dépenses. OpenERP\n"
+"                   vous proposera automatiquement la taxe liée à ce "
+"compte  \n"
+"                    et sa contrepartie \"Compte à payer\".\n"
+"                </p>\n"
+"            "
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1540
+#, python-format
+msgid "You cannot change the tax, you should remove and recreate lines."
+msgstr ""
+"Vous ne pouvez pas modifier la taxe, veuillez supprimer et recréer les "
+"lignes."
 
 #. module: alternate_ledger
 #: field:alternate_ledger.move.line,reconcile_partial_id:0
@@ -624,15 +1111,39 @@ msgid "Effective date"
 msgstr "Date"
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:128
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1070
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1134
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1277
+#, python-format
+msgid "Warning!"
+msgstr "Attention !"
+
+#. module: alternate_ledger
 #: view:alternate_ledger.move.line:0
-msgid "Journal Item"
-msgstr "Ecritures"
+msgid "Taxes"
+msgstr "Taxes"
 
 #. module: alternate_ledger
 #: selection:alternate_ledger.move.line,centralisation:0
 msgid "Credit Centralisation"
 msgstr "Centralisation Credit "
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger.py:549
+#: code:addons/alternate_ledger/alternate_ledger.py:556
+#: code:addons/alternate_ledger/alternate_ledger.py:593
+#: code:addons/alternate_ledger/alternate_ledger.py:601
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1427
+#, python-format
+msgid "User Error!"
+msgstr "Erreur Utilisateur !"
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1277
+#, python-format
+msgid "You have to provide an account for the write off entry."
+msgstr "Vous devez fournir un compte pour pertes et profits."
 
 #. module: alternate_ledger
 #: view:alternate_ledger.move:0
@@ -646,12 +1157,24 @@ msgid "Entry Lines"
 msgstr "Lignes d'entrée"
 
 #. module: alternate_ledger
-#: model:ir.model,name:alternate_ledger.model_account_balance_report
-msgid "Trial Balance Report"
-msgstr "Balance générale"
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1155
+#, python-format
+msgid "All entries must have the same account to be reconciled."
+msgstr ""
+"Seules les transactions du même compte peuvent être lettrées ensembles."
 
 #. module: alternate_ledger
-#: view:alternate_ledger.move:0
+#: code:addons/alternate_ledger/alternate_ledger.py:334
+#, python-format
+msgid "Please define a sequence on the journal."
+msgstr "Merci de définir une séquence pour ce journal."
+
+#. module: alternate_ledger
+#: field:account.journal,is_active:0
+msgid "Is Active"
+msgstr "Est Actif"
+
+#. module: alternate_ledger
 #: view:alternate_ledger.move.line:0
 msgid "States"
 msgstr "Etat"
@@ -661,3 +1184,37 @@ msgstr "Etat"
 msgid "Reconcile Ref"
 msgstr "Reconcile Ref"
 
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1542
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1688
+#, fuzzy, python-format
+msgid "You cannot use an inactive account."
+msgstr "Vous ne pouvez pas créer d'écriture comptable sur un compte fermé."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1428
+#, python-format
+msgid "The alternate ledger move (%s) for centralisation has been confirmed."
+msgstr "La pièce comptable annexe (%s) pour la centralisation a été confirmée."
+
+#. module: alternate_ledger
+#: code:addons/alternate_ledger/alternate_ledger_move_line.py:1755
+#, python-format
+msgid ""
+"You cannot use this general account in this journal, check the tab 'Entry "
+"Controls' on the related journal."
+msgstr ""
+"Vous ne pouvez pas utiliser ce compte dans ce journal, merci de vérifier "
+"l'onglet 'Contrôle Saisie'  dans ce journal."
+
+#~ msgid "No Opening"
+#~ msgstr "Pas d'ouverture"
+
+#~ msgid "The optional other currency if it is a multi-currency entry."
+#~ msgstr "L'autre devise facultative si c'est une pièce multi-devises."
+
+#~ msgid "alternate_ledger.ledger_type"
+#~ msgstr "alternate_ledger.ledger_type"
+
+#~ msgid "Trial Balance Report"
+#~ msgstr "Balance générale"
