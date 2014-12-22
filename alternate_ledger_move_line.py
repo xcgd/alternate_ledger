@@ -1490,7 +1490,11 @@ class alternate_ledger_move_line(osv.osv):
         account_obj = self.pool.get('account.account')
         cur_obj = self.pool.get('res.currency')
         amount_trans = vals.get('amount_currency', 0.0)
-        amount_curr = vals.get('debit_curr', 0.0) - vals.get('credit_curr', 0.0)
+        amount_curr = (
+            vals.get('debit_curr', 0.0) -
+            vals.get('credit_curr', 0.0)
+        )
+
         amount_base = vals.get('debit', 0.0) - vals.get('credit', 0.0)
         currency_trans = vals.get('currency_id', False)
 
@@ -1500,31 +1504,49 @@ class alternate_ledger_move_line(osv.osv):
         if amount_trans == 0.0 and not amount_curr == 0.0:
             amount_trans = vals['amount_currency'] = amount_curr
 
-        # compute actual rate ONLY when amounts in BOTH base and transaction curr are given
-        if not amount_trans == 0.0 and currency_trans and not amount_base == 0.0:
-            # vals['currency_rate'] = cur_obj.round(cr, uid, cur_browse, abs(amount_trans / amount_base))
+        # compute actual rate ONLY when amounts in
+        # BOTH base and transaction curr are given
+        if (
+            not amount_trans == 0.0 and
+            currency_trans and
+            not amount_base == 0.0
+        ):
+            # vals['currency_rate'] = cur_obj.round(
+            #    cr, uid, cur_browse, abs(amount_trans / amount_base)
+            # )
             vals['currency_rate'] = abs(amount_trans / amount_base)
 
-        # make sure the secondary currency is always present by copying the base amount and currency
-        if 'account_id' in vals:
-            currency_base = account_obj.browse(cr, uid, vals['account_id'], context=context).company_id.currency_id.id
-            if amount_trans == 0.0 and (currency_trans == currency_base or not currency_trans):
-                amount_trans = vals['amount_currency'] = cur_obj.compute(cr, uid, currency_base,
-                                                                         currency_base,
-                                                                         vals.get('debit', 0.0) - vals.get('credit', 0.0),
-                                                                         context=context)
+        # make sure the secondary currency is always present
+        # by copying the base amount and currency
+        if 'account_id' in vals and ('debit' in vals or 'credit' in vals):
+            currency_base = account_obj.browse(
+                cr, uid, vals['account_id'], context=context
+            ).company_id.currency_id.id
+            if (
+                amount_trans == 0.0 and
+                (currency_trans == currency_base or not currency_trans)
+            ):
+                amount_trans = vals['amount_currency'] = cur_obj.compute(
+                    cr, uid, currency_base, currency_base,
+                    amount_base,
+                    context=context
+                )
 
                 currency_trans = vals['currency_id'] = currency_base
-                cur_browse = cur_obj.browse(cr, uid, currency_trans, context=context)
+                cur_browse = cur_obj.browse(
+                    cr, uid, currency_trans, context=context)
                 vals['currency_rate'] = 1.0
 
         #TODO : create proper tests!!!
 
         # compute debit and credit in transaction currency when not provided
-        # this should happen only with generated transaction, not with manual entries
-        if not amount_trans == 0.0 and not vals.get('_manual_write', False):
-            vals['debit_curr'] = cur_obj.round(cr, uid, cur_browse, amount_trans > 0.0 and amount_trans)
-            vals['credit_curr'] = cur_obj.round(cr, uid, cur_browse, amount_trans < 0.0 and -amount_trans)
+        # this should happen only with generated transaction,
+        # not with manual entries
+        if not amount_trans == 0.0 and currency_trans:
+            vals['debit_curr'] = cur_obj.round(
+                cr, uid, cur_browse, amount_trans > 0.0 and amount_trans)
+            vals['credit_curr'] = cur_obj.round(
+                cr, uid, cur_browse, amount_trans < 0.0 and -amount_trans)
 
         return vals
 
@@ -1586,7 +1608,6 @@ class alternate_ledger_move_line(osv.osv):
             ids = [ids]
 
         # processing vals to get complete multicurrency data
-        vals['_manual_write'] = True
         vals = self._compute_multicurrency(cr, uid, vals, context=context)
 
         # enforce stricter security rules on
@@ -1599,6 +1620,13 @@ class alternate_ledger_move_line(osv.osv):
             move_osv = self.pool.get('alternate_ledger.move')
             target_journal_id = move_osv.browse(cr, uid, target_move_id,
                                                 context=context).journal_id.id
+
+        # Whether it is safe to remove the "move_id" key from values being set;
+        # this is necessary when modifying lines from posted account.move
+        # objects as unmodified lines are written with a "move_id" key which
+        # results in validation checks not passing as they think the "move_id"
+        # is being modified.
+        same_move_id = target_move_id
 
         for aml in self.browse(cr, uid, ids, context=context):
 
@@ -1626,11 +1654,17 @@ class alternate_ledger_move_line(osv.osv):
                                         context=context):
                 raise osv.except_osv(_('Error!'), msg_invalid_move)
 
+            if same_move_id and current_move_id != target_move_id:
+                same_move_id = False
+
             # we don't allow switching from one journal_id (journal type)
             #  to the other even for draft entries
             if target_journal_id and \
                     not target_journal_id == current_journal_id:
                 raise osv.except_osv(_('Error!'), msg_invalid_journal)
+
+        if same_move_id:
+            vals.pop('move_id')
 
         return self.write_(
             cr, uid, ids, vals,
