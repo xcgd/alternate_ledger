@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Alternate Ledger",
-    "version": "1.5.3",
+    "version": "1.6",
     "author": "XCG Consulting",
     "category": 'Accounting',
     "description": '''Allow the creation of new accounting ledgers that store
         separate transactions.''',
-    'website': 'http://www.openerp-experts.com',
+    'website': 'http://odoo.consulting/',
     'init_xml': [],
     "depends": [
         'base',
